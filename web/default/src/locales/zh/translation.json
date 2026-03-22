@@ -210,7 +210,8 @@
       "refresh": "刷新",
       "stats": "统计",
       "more": "更多",
-      "more_actions": "更多操作"
+      "more_actions": "更多操作",
+      "batch": "批量创建"
     },
     "delete": {
       "confirm_title": "确认删除",

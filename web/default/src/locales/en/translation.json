@@ -210,7 +210,8 @@
       "refresh": "Refresh",
       "stats": "Stats",
       "more": "More",
-      "more_actions": "More Actions"
+      "more_actions": "More Actions",
+      "batch": "Batch Create"
     },
     "delete": {
       "confirm_title": "Confirm Deletion",

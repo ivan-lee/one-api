@@ -24,7 +24,7 @@ const Token = () => {
               primary
               onClick={() => setShowBatchCreate(true)}
             >
-              {t('token.batch')}
+              {t('token.buttons.batch')}
             </Button>
           </Card.Header>
           <TokensTable key={refreshKey} />
