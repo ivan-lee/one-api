@@ -90,7 +90,12 @@ func SetApiRouter(router *gin.Engine) {
 			tokenRoute.GET("/", controller.GetAllTokens)
 			tokenRoute.GET("/search", controller.SearchTokens)
 			tokenRoute.GET("/:id", controller.GetToken)
+			tokenRoute.GET("/:id/stats", controller.GetTokenUsageStats)
+			tokenRoute.GET("/:id/stats/daily", controller.GetTokenDailyStats)
+			tokenRoute.GET("/:id/stats/hourly", controller.GetTokenHourlyStats)
+			tokenRoute.GET("/:id/stats/model", controller.GetTokenModelStats)
 			tokenRoute.POST("/", controller.AddToken)
+			tokenRoute.POST("/batch", controller.BatchCreateToken)
 			tokenRoute.PUT("/", controller.UpdateToken)
 			tokenRoute.DELETE("/:id", controller.DeleteToken)
 		}
