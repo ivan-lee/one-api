@@ -116,6 +116,11 @@ func TokenAuth() func(c *gin.Context) {
 			abortWithMessage(c, http.StatusForbidden, "用户已被封禁")
 			return
 		}
+
+		if err := checkTokenQuotaLimits(c, token); err != nil {
+			return
+		}
+
 		requestModel, err := getRequestModel(c)
 		if err != nil && shouldCheckModel(c) {
 			abortWithMessage(c, http.StatusBadRequest, err.Error())
@@ -132,6 +137,7 @@ func TokenAuth() func(c *gin.Context) {
 		c.Set(ctxkey.Id, token.UserId)
 		c.Set(ctxkey.TokenId, token.Id)
 		c.Set(ctxkey.TokenName, token.Name)
+		c.Set(ctxkey.Token, token)
 		if len(parts) > 1 {
 			if model.IsAdmin(token.UserId) {
 				c.Set(ctxkey.SpecificChannelId, parts[1])
@@ -164,4 +170,20 @@ func shouldCheckModel(c *gin.Context) bool {
 		return true
 	}
 	return false
+}
+
+func checkTokenQuotaLimits(c *gin.Context, token *model.Token) error {
+	if err := token.IsAllowedTime(); err != nil {
+		abortWithMessage(c, http.StatusForbidden, err.Error())
+		return err
+	}
+
+	checkAndResetQuotas(token)
+
+	if err := checkRequestRateLimit(token); err != nil {
+		abortWithMessage(c, http.StatusTooManyRequests, err.Error())
+		return err
+	}
+
+	return nil
 }
