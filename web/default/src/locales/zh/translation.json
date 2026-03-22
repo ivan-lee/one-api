@@ -330,6 +330,27 @@
         "title": "错误",
         "load_failed": "加载令牌统计数据失败"
       }
+    },
+    "batch_create": {
+      "modal_title": "批量创建令牌",
+      "token_names_label": "令牌名称（支持逗号、换行或分号分隔）",
+      "token_names_placeholder": "示例：\nuser_001, user_002, user_003\n或每行一个：\nuser_001\nuser_002\nuser_003\n或用分号分隔：\nuser_001; user_002; user_003",
+      "tokens_will_be_created": "个令牌将被创建",
+      "max_100_warning": "（最多允许 100 个）",
+      "enter_names_above": "在上方输入令牌名称",
+      "modal_complete_header": "批量创建完成",
+      "modal_complete_message": "成功创建：{{success_count}} 个令牌{{#if fail_count}}，失败：<strong style=\"color: red\">{{fail_count}}</strong>{{/if}}",
+      "copy_all_keys": "复制所有密钥",
+      "create_more": "创建更多令牌",
+      "key_copied": "密钥已复制",
+      "table": {
+        "name": "名称",
+        "key": "密钥",
+        "status": "状态",
+        "action": "操作",
+        "success": "成功",
+        "failed": "失败"
+      }
     }
   },
   "common": {

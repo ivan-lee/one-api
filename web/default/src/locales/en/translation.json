@@ -330,6 +330,27 @@
         "title": "Error",
         "load_failed": "Failed to load token statistics"
       }
+    },
+    "batch_create": {
+      "modal_title": "Batch Create Tokens",
+      "token_names_label": "Token Names (comma, newline, or semicolon separated)",
+      "token_names_placeholder": "Example:\nuser_001, user_002, user_003\nor one per line:\nuser_001\nuser_002\nuser_003\nor separated by semicolons:\nuser_001; user_002; user_003",
+      "tokens_will_be_created": "tokens will be created",
+      "max_100_warning": "(Maximum 100 allowed)",
+      "enter_names_above": "Enter token names above",
+      "modal_complete_header": "Batch Creation Complete",
+      "modal_complete_message": "Successfully created: {{success_count}} tokens{{#if fail_count}}, Failed: <strong style=\"color: red\">{{fail_count}}</strong>{{/if}}",
+      "copy_all_keys": "Copy All Keys",
+      "create_more": "Create More Tokens",
+      "key_copied": "Key copied",
+      "table": {
+        "name": "Name",
+        "key": "Key",
+        "status": "Status",
+        "action": "Action",
+        "success": "Success",
+        "failed": "Failed"
+      }
     }
   },
   "common": {
