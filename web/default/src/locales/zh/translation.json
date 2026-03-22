@@ -334,7 +334,7 @@
     "batch_create": {
       "modal_title": "批量创建令牌",
       "token_names_label": "令牌名称（支持逗号、换行或分号分隔）",
-      "token_names_placeholder": "示例：\nuser_001, user_002, user_003\n或每行一个：\nuser_001\nuser_002\nuser_003\n或用分号分隔：\nuser_001; user_002; user_003",
+      "token_names_placeholder": "token_1, token_2, token_3\n或每行一个\n或用分号分隔",
       "tokens_will_be_created": "个令牌将被创建",
       "max_100_warning": "（最多允许 100 个）",
       "enter_names_above": "在上方输入令牌名称",
@@ -349,7 +349,13 @@
         "status": "状态",
         "action": "操作",
         "success": "成功",
-        "failed": "失败"
+        "failed": "失败",
+        "copy": "复制"
+      },
+      "buttons": {
+        "cancel": "取消",
+        "create": "创建",
+        "close": "关闭"
       }
     }
   },

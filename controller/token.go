@@ -235,11 +235,13 @@ func BatchCreateToken(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"success":       true,
-		"message":       "",
-		"success_count": response.SuccessCount,
-		"fail_count":    response.FailCount,
-		"results":       response.Results,
+		"success": true,
+		"message": "",
+		"data": gin.H{
+			"success_count": response.SuccessCount,
+			"fail_count":    response.FailCount,
+			"results":       response.Results,
+		},
 	})
 }
 

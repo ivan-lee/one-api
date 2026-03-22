@@ -235,14 +235,14 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
 
   return (
     <Modal open={open} onClose={handleClose} size="large">
-      <Modal.Header>{t('token.batch.modal_title')}</Modal.Header>
+      <Modal.Header>{t('token.batch_create.modal_title')}</Modal.Header>
       <Modal.Content scrolling>
         {!results ? (
           <Form loading={loading} autoComplete='new-password'>
             <Form.Field>
-              <label>{t('token.batch.token_names_label')}</label>
+              <label>{t('token.batch_create.token_names_label')}</label>
               <TextArea
-                placeholder={t('token.batch.token_names_placeholder')}
+                placeholder={t('token.batch_create.token_names_placeholder')}
                 value={namesText}
                 onChange={(e, { value }) => setNamesText(value)}
                 rows={5}
@@ -251,15 +251,15 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
               <Message info size='small'>
                 {namesCount > 0 ? (
                   <span>
-                    <strong>{namesCount}</strong> {t('token.batch.tokens_will_be_created')}
+                    <strong>{namesCount}</strong> {t('token.batch_create.tokens_will_be_created')}
                     {namesCount > 100 && (
                       <span style={{ color: 'red', marginLeft: '10px' }}>
-                        {t('token.batch.max_100_warning')}
+                        {t('token.batch_create.max_100_warning')}
                       </span>
                     )}
                   </span>
                 ) : (
-                  t('token.batch.enter_names_above')
+                  t('token.batch_create.enter_names_above')
                 )}
               </Message>
             </Form.Field>
@@ -507,27 +507,27 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
         ) : (
           <div>
             <Message success>
-              <Message.Header>{t('token.batch.modal_complete_header')}</Message.Header>
+              <Message.Header>{t('token.batch_create.modal_complete_header')}</Message.Header>
               <p>
-                {t('token.batch.modal_complete_message', {
-                  success_count: results.success_count,
-                  fail_count: results.fail_count
-                })}
+                成功创建：<strong>{results.success_count}</strong> 个令牌
+                {results.fail_count > 0 && (
+                  <span>，失败：<strong style={{ color: 'red' }}>{results.fail_count}</strong></span>
+                )}
               </p>
             </Message>
             <Button primary onClick={copyAllKeys} style={{ marginBottom: '15px' }}>
-              <Icon name='copy' /> {t('token.batch.copy_all_keys')}
+              <Icon name='copy' /> {t('token.batch_create.copy_all_keys')}
             </Button>
             <Button onClick={() => setResults(null)} style={{ marginBottom: '15px' }}>
-              {t('token.batch.create_more')}
+              {t('token.batch_create.create_more')}
             </Button>
             <Table celled striped>
               <Table.Header>
                 <Table.Row>
-                  <Table.HeaderCell>{t('token.batch.table.name')}</Table.HeaderCell>
-                  <Table.HeaderCell>{t('token.batch.table.key')}</Table.HeaderCell>
-                  <Table.HeaderCell>{t('token.batch.table.status')}</Table.HeaderCell>
-                  <Table.HeaderCell>{t('token.batch.table.action')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('token.batch_create.table.name')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('token.batch_create.table.key')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('token.batch_create.table.status')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('token.batch_create.table.action')}</Table.HeaderCell>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
@@ -539,9 +539,9 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
                     </Table.Cell>
                     <Table.Cell>
                       {result.success ? (
-                        <span style={{ color: 'green' }}>{t('token.batch.table.success')}</span>
+                        <span style={{ color: 'green' }}>{t('token.batch_create.table.success')}</span>
                       ) : (
-                        <span style={{ color: 'red' }}>{result.error || t('token.batch.table.failed')}</span>
+                        <span style={{ color: 'red' }}>{result.error || t('token.batch_create.table.failed')}</span>
                       )}
                     </Table.Cell>
                     <Table.Cell>
@@ -550,11 +550,11 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
                           size='tiny'
                           onClick={async () => {
                             if (await copy(`sk-${result.key}`)) {
-                              showSuccess(t('token.batch.key_copied'));
+                              showSuccess(t('token.batch_create.key_copied'));
                             }
                           }}
                         >
-                          Copy
+                          {t('token.batch_create.table.copy')}
                         </Button>
                       )}
                     </Table.Cell>
@@ -568,18 +568,18 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
       <Modal.Actions>
         {!results ? (
           <>
-            <Button onClick={handleClose}>Cancel</Button>
+            <Button onClick={handleClose}>{t('token.batch_create.buttons.cancel')}</Button>
             <Button
               positive
               onClick={submit}
               loading={loading}
               disabled={namesCount === 0 || namesCount > 100}
             >
-              Create {namesCount > 0 ? `(${namesCount})` : ''}
+              {t('token.batch_create.buttons.create')} {namesCount > 0 ? `(${namesCount})` : ''}
             </Button>
           </>
         ) : (
-          <Button onClick={handleClose}>Close</Button>
+          <Button onClick={handleClose}>{t('token.batch_create.buttons.close')}</Button>
         )}
       </Modal.Actions>
     </Modal>
