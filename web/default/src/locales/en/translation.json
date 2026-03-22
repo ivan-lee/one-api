@@ -186,7 +186,8 @@
       "disable": "Disable",
       "edit": "Edit",
       "add": "Add New Token",
-      "refresh": "Refresh"
+      "refresh": "Refresh",
+      "stats": "Stats"
     },
     "edit": {
       "title_edit": "Update Token Information",
@@ -236,6 +237,46 @@
       "default": "Default Order",
       "by_remain": "Sort by Remaining Quota",
       "by_used": "Sort by Used Quota"
+    },
+    "stats": {
+      "title": "Token Usage Statistics",
+      "loading": "Loading statistics...",
+      "date_label": "Date",
+      "hour_label": "Hour",
+      "date_range": {
+        "7d": "Last 7 Days",
+        "14d": "Last 14 Days",
+        "30d": "Last 30 Days",
+        "90d": "Last 90 Days"
+      },
+      "buttons": {
+        "refresh": "Refresh",
+        "retry": "Retry"
+      },
+      "overview": {
+        "title": "Overview",
+        "total_requests": "Total Requests",
+        "total_quota": "Total Quota Used",
+        "total_tokens": "Total Tokens"
+      },
+      "charts": {
+        "daily_requests": "Daily Requests",
+        "daily_quota": "Daily Quota",
+        "daily_tokens": "Daily Tokens",
+        "hourly_usage": "Hourly Usage (Last 24 Hours)",
+        "model_usage": "Model Usage Breakdown",
+        "requests_tooltip": "Requests",
+        "quota_tooltip": "Quota",
+        "tokens_tooltip": "Tokens"
+      },
+      "no_data": {
+        "title": "No Data Available",
+        "description": "This token has not been used yet. Statistics will appear here after the token is used."
+      },
+      "error": {
+        "title": "Error",
+        "load_failed": "Failed to load token statistics"
+      }
     }
   },
   "common": {

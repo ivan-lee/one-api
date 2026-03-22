@@ -18,6 +18,7 @@ import { StatusContext } from './context/Status';
 import Channel from './pages/Channel';
 import Token from './pages/Token';
 import EditToken from './pages/Token/EditToken';
+import TokenStats from './pages/Token/TokenStats';
 import EditChannel from './pages/Channel/EditChannel';
 import Redemption from './pages/Redemption';
 import EditRedemption from './pages/Redemption/EditRedemption';
@@ -148,6 +149,14 @@ function App() {
           <Suspense fallback={<Loading></Loading>}>
             <EditToken />
           </Suspense>
+        }
+      />
+      <Route
+        path='/token/stats/:id'
+        element={
+          <PrivateRoute>
+            <TokenStats />
+          </PrivateRoute>
         }
       />
       <Route

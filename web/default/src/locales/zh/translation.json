@@ -186,7 +186,8 @@
       "disable": "禁用",
       "edit": "编辑",
       "add": "添加新的令牌",
-      "refresh": "刷新"
+      "refresh": "刷新",
+      "stats": "统计"
     },
     "edit": {
       "title_edit": "更新令牌信息",
@@ -236,6 +237,46 @@
       "default": "默认排序",
       "by_remain": "按剩余额度排序",
       "by_used": "按已用额度排序"
+    },
+    "stats": {
+      "title": "令牌使用统计",
+      "loading": "加载统计数据中...",
+      "date_label": "日期",
+      "hour_label": "小时",
+      "date_range": {
+        "7d": "最近7天",
+        "14d": "最近14天",
+        "30d": "最近30天",
+        "90d": "最近90天"
+      },
+      "buttons": {
+        "refresh": "刷新",
+        "retry": "重试"
+      },
+      "overview": {
+        "title": "概览",
+        "total_requests": "总请求数",
+        "total_quota": "已用额度",
+        "total_tokens": "总Token数"
+      },
+      "charts": {
+        "daily_requests": "每日请求数",
+        "daily_quota": "每日额度",
+        "daily_tokens": "每日Token",
+        "hourly_usage": "小时使用量（最近24小时）",
+        "model_usage": "模型使用分布",
+        "requests_tooltip": "请求数",
+        "quota_tooltip": "额度",
+        "tokens_tooltip": "Token数"
+      },
+      "no_data": {
+        "title": "暂无数据",
+        "description": "此令牌尚未被使用，使用后将在此显示统计数据。"
+      },
+      "error": {
+        "title": "错误",
+        "load_failed": "加载令牌统计数据失败"
+      }
     }
   },
   "common": {

@@ -486,6 +486,14 @@ const TokensTable = () => {
                       >
                         {t('token.buttons.edit')}
                       </Button>
+                      <Button
+                        size={'tiny'}
+                        color='blue'
+                        as={Link}
+                        to={'/token/stats/' + token.id}
+                      >
+                        {t('token.buttons.stats')}
+                      </Button>
                     </div>
                   </Table.Cell>
                 </Table.Row>
