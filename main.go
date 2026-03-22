@@ -21,6 +21,7 @@ import (
 	"github.com/songquanpeng/one-api/model"
 	"github.com/songquanpeng/one-api/relay/adaptor/openai"
 	"github.com/songquanpeng/one-api/router"
+	"github.com/songquanpeng/one-api/service"
 )
 
 //go:embed web/build/*
@@ -90,6 +91,10 @@ func main() {
 	}
 	if config.EnableMetric {
 		logger.SysLog("metric enabled, will disable channel if too much request failed")
+	}
+	if config.StatsAggregatorEnabled {
+		logger.SysLog("stats aggregator enabled, will pre-aggregate statistics periodically")
+		service.StartStatsAggregator()
 	}
 	openai.InitTokenEncoders()
 	client.Init()

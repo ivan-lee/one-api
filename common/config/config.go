@@ -164,3 +164,7 @@ var UserContentRequestTimeout = env.Int("USER_CONTENT_REQUEST_TIMEOUT", 30)
 
 var EnforceIncludeUsage = env.Bool("ENFORCE_INCLUDE_USAGE", false)
 var TestPrompt = env.String("TEST_PROMPT", "Output only your specific model name with no additional text.")
+
+// Stats Aggregator Configuration
+var StatsAggregatorEnabled = env.Bool("STATS_AGGREGATOR_ENABLED", false)
+var StatsAggregatorDailyHour = env.Int("STATS_AGGREGATOR_DAILY_HOUR", 1) // Hour of day (0-23) to run daily aggregation
