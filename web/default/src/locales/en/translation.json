@@ -187,7 +187,8 @@
       "edit": "Edit",
       "add": "Add New Token",
       "refresh": "Refresh",
-      "stats": "Stats"
+      "stats": "Stats",
+      "more_actions": "More Actions"
     },
     "edit": {
       "title_edit": "Update Token Information",

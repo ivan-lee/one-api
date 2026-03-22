@@ -187,7 +187,8 @@
       "edit": "编辑",
       "add": "添加新的令牌",
       "refresh": "刷新",
-      "stats": "统计"
+      "stats": "统计",
+      "more_actions": "更多操作"
     },
     "edit": {
       "title_edit": "更新令牌信息",
