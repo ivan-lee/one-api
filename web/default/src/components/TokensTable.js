@@ -468,14 +468,13 @@ const TokensTable = () => {
                         {t('token.buttons.stats')}
                       </Button>{' '}
                       
+                      
                       <Dropdown
                         size='tiny'
                         icon='ellipsis horizontal'
                         floating
-                        labeled
                         button
                         className='icon'
-                        text={t('token.buttons.more_actions')}
                         options={[
                           {
                             key: 'chat',
