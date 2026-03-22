@@ -1,0 +1,182 @@
+.stats-container {
+  padding: 20px;
+}
+
+.stats-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.stats-error {
+  padding: 20px;
+}
+
+.stats-header-card {
+  margin-bottom: 20px;
+}
+
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.stats-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.date-range-dropdown {
+  min-width: 150px;
+}
+
+.stats-overview-card {
+  margin-bottom: 20px;
+}
+
+.stats-grid {
+  margin-top: 20px;
+}
+
+.charts-grid {
+  margin-bottom: 20px;
+}
+
+.chart-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chart-card .header {
+  font-weight: 600;
+  color: #1b2559;
+  margin-bottom: 15px;
+}
+
+.chart-container {
+  width: 100%;
+  min-height: 300px;
+}
+
+.ranking-chart-container {
+  width: 100%;
+  min-height: 350px;
+}
+
+/* Overview stats styling */
+.stats-overview-card .ui.statistic {
+  margin: 10px 0;
+}
+
+.stats-overview-card .ui.statistic > .value {
+  color: #1b2559;
+  font-size: 1.8em;
+  font-weight: 600;
+}
+
+.stats-overview-card .ui.statistic > .label {
+  color: #A3AED0;
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+/* Chart card headers */
+.chart-card .card .header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .stats-container {
+    padding: 10px;
+  }
+
+  .stats-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .stats-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .date-range-dropdown {
+    flex: 1;
+  }
+
+  .chart-container {
+    min-height: 250px;
+  }
+
+  .ranking-chart-container {
+    min-height: 300px;
+  }
+
+  .stats-overview-card .ui.statistic > .value {
+    font-size: 1.5em;
+  }
+}
+
+/* Grid adjustments for better mobile layout */
+@media (max-width: 480px) {
+  .stats-overview-card .ui.grid {
+    margin: 0;
+  }
+
+  .stats-overview-card .ui.grid > .column {
+    padding: 10px 5px;
+  }
+
+  .chart-container {
+    min-height: 200px;
+  }
+}
+
+/* Empty state styling */
+.stats-container .ui.message {
+  margin-bottom: 20px;
+}
+
+/* Color scheme for statistics */
+.stats-overview-card .column:nth-child(1) .statistic .value {
+  color: #4318FF;
+}
+
+.stats-overview-card .column:nth-child(2) .statistic .value {
+  color: #00B5D8;
+}
+
+.stats-overview-card .column:nth-child(3) .statistic .value {
+  color: #6C63FF;
+}
+
+.stats-overview-card .column:nth-child(4) .statistic .value {
+  color: #05CD99;
+}
+
+/* Animation for loading state */
+.stats-loading .ui.loader {
+  color: #4318FF;
+}
+
+/* Card hover effect */
+.chart-card {
+  transition: box-shadow 0.3s ease;
+}
+
+.chart-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Tooltip customization */
+.recharts-tooltip-wrapper {
+  z-index: 100;
+}

@@ -473,6 +473,46 @@
         "date": "Date",
         "value": "Value"
       }
+    },
+    "stats": {
+      "title": "System Statistics",
+      "loading": "Loading statistics...",
+      "date_range": {
+        "7d": "Last 7 Days",
+        "14d": "Last 14 Days",
+        "30d": "Last 30 Days",
+        "90d": "Last 90 Days"
+      },
+      "buttons": {
+        "refresh": "Refresh",
+        "retry": "Retry"
+      },
+      "overview": {
+        "title": "Overview",
+        "total_users": "Total Users",
+        "total_channels": "Total Channels",
+        "total_api_tokens": "Total API Tokens",
+        "total_requests": "Total Requests",
+        "total_quota": "Total Quota Used",
+        "total_prompt_tokens": "Total Prompt Tokens",
+        "total_completion_tokens": "Total Completion Tokens"
+      },
+      "charts": {
+        "model_usage": "Model Usage Breakdown",
+        "user_ranking": "Top Users by Quota",
+        "token_ranking": "Top Tokens by Quota",
+        "requests_tooltip": "Requests",
+        "quota_tooltip": "Quota ($)",
+        "tokens_tooltip": "Tokens"
+      },
+      "no_data": {
+        "title": "No Data Available",
+        "description": "No usage data available for the selected time range. Statistics will appear here after API requests are made."
+      },
+      "error": {
+        "title": "Error",
+        "load_failed": "Failed to load statistics"
+      }
     }
   },
   "setting": {

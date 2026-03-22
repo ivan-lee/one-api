@@ -473,6 +473,46 @@
         "date": "日期",
         "value": "数值"
       }
+    },
+    "stats": {
+      "title": "系统统计",
+      "loading": "加载统计数据中...",
+      "date_range": {
+        "7d": "最近 7 天",
+        "14d": "最近 14 天",
+        "30d": "最近 30 天",
+        "90d": "最近 90 天"
+      },
+      "buttons": {
+        "refresh": "刷新",
+        "retry": "重试"
+      },
+      "overview": {
+        "title": "概览",
+        "total_users": "总用户数",
+        "total_channels": "总渠道数",
+        "total_api_tokens": "总 API 令牌数",
+        "total_requests": "总请求数",
+        "total_quota": "总消费额度",
+        "total_prompt_tokens": "总提示 Token 数",
+        "total_completion_tokens": "总补全 Token 数"
+      },
+      "charts": {
+        "model_usage": "模型使用分布",
+        "user_ranking": "用户消费排行",
+        "token_ranking": "令牌消费排行",
+        "requests_tooltip": "请求数",
+        "quota_tooltip": "额度 ($)",
+        "tokens_tooltip": "Token 数"
+      },
+      "no_data": {
+        "title": "暂无数据",
+        "description": "所选时间范围内暂无使用数据。API 请求后统计数据将在此显示。"
+      },
+      "error": {
+        "title": "错误",
+        "load_failed": "加载统计数据失败"
+      }
     }
   },
   "setting": {
