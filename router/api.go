@@ -122,5 +122,16 @@ func SetApiRouter(router *gin.Engine) {
 		{
 			groupRoute.GET("/", controller.GetGroups)
 		}
+		statsRoute := apiRouter.Group("/stats")
+		{
+			// Admin-only endpoints for system-wide statistics
+			statsRoute.GET("/overview", middleware.AdminAuth(), controller.GetGlobalStats)
+			statsRoute.GET("/tokens", middleware.AdminAuth(), controller.GetTokenStats)
+			statsRoute.GET("/models", middleware.AdminAuth(), controller.GetModelStats)
+			statsRoute.GET("/users", middleware.AdminAuth(), controller.GetUserStats)
+			statsRoute.GET("/ranking", middleware.AdminAuth(), controller.GetStatsRanking)
+			// User endpoint for own statistics
+			statsRoute.GET("/self", middleware.UserAuth(), controller.GetUserSelfStats)
+		}
 	}
 }
