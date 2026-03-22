@@ -378,18 +378,18 @@ const EditToken = () => {
                 onClick={() => setShowAdvanced(!showAdvanced)}
               >
                 <Icon name='dropdown' />
-                Advanced Quota Control
+                {t('token.edit.advanced_quota_control')}
               </Accordion.Title>
               <Accordion.Content active={showAdvanced}>
                 <Message info size='small'>
-                  <Message.Header>Quota Control Settings</Message.Header>
-                  <p>Use -1 for unlimited. Leave empty for defaults. All fields are optional.</p>
+                  <Message.Header>{t('token.edit.quota_control_settings')}</Message.Header>
+                  <p>{t('token.edit.quota_control_help')}</p>
                 </Message>
                 
-                <Header as='h5'>Time-Window Quota Limits</Header>
+                <Header as='h5'>{t('token.edit.time_window_quota_limits')}</Header>
                 <Form.Group widths='equal'>
                   <Form.Input
-                    label='Daily Quota Limit (-1 = unlimited)'
+                    label={t('token.edit.daily_quota_limit')}
                     name='daily_quota_limit'
                     placeholder='-1'
                     onChange={handleInputChange}
@@ -397,7 +397,7 @@ const EditToken = () => {
                     type='number'
                   />
                   <Form.Input
-                    label='Hourly Quota Limit (-1 = unlimited)'
+                    label={t('token.edit.hourly_quota_limit')}
                     name='hourly_quota_limit'
                     placeholder='-1'
                     onChange={handleInputChange}
@@ -405,7 +405,7 @@ const EditToken = () => {
                     type='number'
                   />
                   <Form.Input
-                    label='Monthly Quota Limit (-1 = unlimited)'
+                    label={t('token.edit.monthly_quota_limit')}
                     name='monthly_quota_limit'
                     placeholder='-1'
                     onChange={handleInputChange}
@@ -414,20 +414,20 @@ const EditToken = () => {
                   />
                 </Form.Group>
                 
-                <Header as='h5'>Quota Reset & Timezone</Header>
+                <Header as='h5'>{t('token.edit.quota_reset_and_timezone')}</Header>
                 <Form.Group widths='equal'>
                   <Form.Input
-                    label='Quota Reset Time'
+                    label={t('token.edit.quota_reset_time')}
                     name='quota_reset_time'
-                    placeholder='Select datetime'
+                    placeholder={t('token.edit.quota_reset_time_placeholder')}
                     onChange={handleInputChange}
                     value={quota_reset_time}
                     type='datetime-local'
                   />
                   <Form.Select
-                    label='Quota Timezone'
+                    label={t('token.edit.quota_timezone')}
                     name='quota_timezone'
-                    placeholder='Select timezone'
+                    placeholder={t('token.edit.quota_timezone_placeholder')}
                     options={timezoneOptions}
                     onChange={handleInputChange}
                     value={quota_timezone}
@@ -435,10 +435,10 @@ const EditToken = () => {
                   />
                 </Form.Group>
                 
-                <Header as='h5'>Rate Limits</Header>
+                <Header as='h5'>{t('token.edit.rate_limits')}</Header>
                 <Form.Group widths='equal'>
                   <Form.Input
-                    label='Requests Per Minute (-1 = unlimited)'
+                    label={t('token.edit.requests_per_minute')}
                     name='requests_per_minute'
                     placeholder='-1'
                     onChange={handleInputChange}
@@ -446,7 +446,7 @@ const EditToken = () => {
                     type='number'
                   />
                   <Form.Input
-                    label='Requests Per Hour (-1 = unlimited)'
+                    label={t('token.edit.requests_per_hour')}
                     name='requests_per_hour'
                     placeholder='-1'
                     onChange={handleInputChange}
@@ -455,13 +455,13 @@ const EditToken = () => {
                   />
                 </Form.Group>
                 
-                <Header as='h5'>Time Window Access Control</Header>
+                <Header as='h5'>{t('token.edit.time_window_access_control')}</Header>
                 <Message size='small'>
-                  Allowed Hours: JSON array of hours (0-23), e.g., [9,10,11,12,13,14,15,16,17] for 9AM-5PM
+                  {t('token.edit.allowed_hours_help')}
                 </Message>
                 <Form.Field>
                   <Form.Input
-                    label='Allowed Hours (JSON array)'
+                    label={t('token.edit.allowed_hours')}
                     name='allowed_hours'
                     placeholder='[9,10,11,12,13,14,15,16,17]'
                     onChange={handleInputChange}
@@ -469,11 +469,11 @@ const EditToken = () => {
                   />
                 </Form.Field>
                 <Message size='small'>
-                  Allowed Days: JSON array of weekdays (0=Sunday, 6=Saturday), e.g., [1,2,3,4,5] for Mon-Fri
+                  {t('token.edit.allowed_days_help')}
                 </Message>
                 <Form.Field>
                   <Form.Input
-                    label='Allowed Days (JSON array)'
+                    label={t('token.edit.allowed_days')}
                     name='allowed_days'
                     placeholder='[1,2,3,4,5]'
                     onChange={handleInputChange}
@@ -481,15 +481,15 @@ const EditToken = () => {
                   />
                 </Form.Field>
                 
-                <Header as='h5'>Model-Specific Quotas</Header>
+                <Header as='h5'>{t('token.edit.model_specific_quotas')}</Header>
                 <Message size='small'>
-                  JSON array of objects with model and limit fields. Example:
+                  {t('token.edit.model_quotas_help')}
                   <br />
                   <code>{'[{"model": "gpt-4", "limit": 100000}, {"model": "gpt-3.5-turbo", "limit": 500000}]'}</code>
                 </Message>
                 <Form.Field>
                   <Form.TextArea
-                    label='Model Quotas (JSON)'
+                    label={t('token.edit.model_quotas')}
                     name='model_quotas'
                     placeholder={'[{"model": "gpt-4", "limit": 100000}]'}
                     onChange={handleInputChange}

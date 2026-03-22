@@ -112,6 +112,27 @@
       "key_placeholder": "请输入密钥",
       "batch": "批量创建",
       "batch_placeholder": "请输入密钥，一行一个",
+      "batch_create": {
+        "modal_title": "批量创建令牌",
+        "token_names_label": "令牌名称（支持逗号、换行或分号分隔）",
+        "token_names_placeholder": "token_1, token_2, token_3\n或每行一个\n或用分号分隔",
+        "tokens_will_be_created": "个令牌将被创建",
+        "max_100_warning": "（最多允许 100 个）",
+        "enter_names_above": "在上方输入令牌名称",
+        "modal_complete_header": "批量创建完成",
+        "modal_complete_message": "成功创建：{{success_count}} 个令牌{{#if fail_count}}，失败：<strong style=\"color: red\">{{fail_count}}</strong>{{/if}}",
+        "copy_all_keys": "复制所有密钥",
+        "create_more": "创建更多令牌",
+        "key_copied": "密钥已复制",
+        "table": {
+          "name": "名称",
+          "key": "密钥",
+          "status": "状态",
+          "action": "操作",
+          "success": "成功",
+          "failed": "失败"
+        }
+      },
       "buttons": {
         "cancel": "取消",
         "submit": "提交",
@@ -235,7 +256,9 @@
       "monthly_quota_limit": "每月限额（-1 = 无限制）",
       "quota_reset_and_timezone": "配额重置与时区",
       "quota_reset_time": "配额重置时间",
+      "quota_reset_time_placeholder": "选择日期时间",
       "quota_timezone": "时区",
+      "quota_timezone_placeholder": "选择时区",
       "rate_limits": "速率限制",
       "requests_per_minute": "每分钟请求数（-1 = 无限制）",
       "requests_per_hour": "每小时请求数（-1 = 无限制）",

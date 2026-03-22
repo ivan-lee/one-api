@@ -235,14 +235,14 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
 
   return (
     <Modal open={open} onClose={handleClose} size="large">
-      <Modal.Header>Batch Create Tokens</Modal.Header>
+      <Modal.Header>{t('token.batch.modal_title')}</Modal.Header>
       <Modal.Content scrolling>
         {!results ? (
           <Form loading={loading} autoComplete='new-password'>
             <Form.Field>
-              <label>Token Names (comma, newline, or semicolon separated)</label>
+              <label>{t('token.batch.token_names_label')}</label>
               <TextArea
-                placeholder="token_1, token_2, token_3&#10;or one per line&#10;or separated by semicolons"
+                placeholder={t('token.batch.token_names_placeholder')}
                 value={namesText}
                 onChange={(e, { value }) => setNamesText(value)}
                 rows={5}
@@ -251,15 +251,15 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
               <Message info size='small'>
                 {namesCount > 0 ? (
                   <span>
-                    <strong>{namesCount}</strong> token{namesCount !== 1 ? 's' : ''} will be created
+                    <strong>{namesCount}</strong> {t('token.batch.tokens_will_be_created')}
                     {namesCount > 100 && (
                       <span style={{ color: 'red', marginLeft: '10px' }}>
-                        (Maximum 100 allowed)
+                        {t('token.batch.max_100_warning')}
                       </span>
                     )}
                   </span>
                 ) : (
-                  'Enter token names above'
+                  t('token.batch.enter_names_above')
                 )}
               </Message>
             </Form.Field>
@@ -382,18 +382,18 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
                 onClick={() => setShowAdvanced(!showAdvanced)}
               >
                 <Icon name='dropdown' />
-                Advanced Quota Control
+                {t('token.edit.advanced_quota_control')}
               </Accordion.Title>
               <Accordion.Content active={showAdvanced}>
                 <Message info size='small'>
-                  <Message.Header>Quota Control Settings</Message.Header>
-                  <p>Use -1 for unlimited. Leave empty for defaults. All fields are optional.</p>
+                  <Message.Header>{t('token.edit.quota_control_settings')}</Message.Header>
+                  <p>{t('token.edit.quota_control_help')}</p>
                 </Message>
 
-                <Header as='h5'>Time-Window Quota Limits</Header>
+                <Header as='h5'>{t('token.edit.time_window_quota_limits')}</Header>
                 <Form.Group widths='equal'>
                   <Form.Input
-                    label='Daily Quota Limit (-1 = unlimited)'
+                    label={t('token.edit.daily_quota_limit')}
                     name='daily_quota_limit'
                     placeholder='-1'
                     onChange={handleInputChange}
@@ -401,7 +401,7 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
                     type='number'
                   />
                   <Form.Input
-                    label='Hourly Quota Limit (-1 = unlimited)'
+                    label={t('token.edit.hourly_quota_limit')}
                     name='hourly_quota_limit'
                     placeholder='-1'
                     onChange={handleInputChange}
@@ -409,7 +409,7 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
                     type='number'
                   />
                   <Form.Input
-                    label='Monthly Quota Limit (-1 = unlimited)'
+                    label={t('token.edit.monthly_quota_limit')}
                     name='monthly_quota_limit'
                     placeholder='-1'
                     onChange={handleInputChange}
@@ -418,20 +418,20 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
                   />
                 </Form.Group>
 
-                <Header as='h5'>Quota Reset & Timezone</Header>
+                <Header as='h5'>{t('token.edit.quota_reset_and_timezone')}</Header>
                 <Form.Group widths='equal'>
                   <Form.Input
-                    label='Quota Reset Time'
+                    label={t('token.edit.quota_reset_time')}
                     name='quota_reset_time'
-                    placeholder='Select datetime'
+                    placeholder={t('token.edit.quota_reset_time_placeholder')}
                     onChange={handleInputChange}
                     value={quota_reset_time}
                     type='datetime-local'
                   />
                   <Form.Select
-                    label='Quota Timezone'
+                    label={t('token.edit.quota_timezone')}
                     name='quota_timezone'
-                    placeholder='Select timezone'
+                    placeholder={t('token.edit.quota_timezone_placeholder')}
                     options={timezoneOptions}
                     onChange={handleInputChange}
                     value={quota_timezone}
@@ -439,10 +439,10 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
                   />
                 </Form.Group>
 
-                <Header as='h5'>Rate Limits</Header>
+                <Header as='h5'>{t('token.edit.rate_limits')}</Header>
                 <Form.Group widths='equal'>
                   <Form.Input
-                    label='Requests Per Minute (-1 = unlimited)'
+                    label={t('token.edit.requests_per_minute')}
                     name='requests_per_minute'
                     placeholder='-1'
                     onChange={handleInputChange}
@@ -450,7 +450,7 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
                     type='number'
                   />
                   <Form.Input
-                    label='Requests Per Hour (-1 = unlimited)'
+                    label={t('token.edit.requests_per_hour')}
                     name='requests_per_hour'
                     placeholder='-1'
                     onChange={handleInputChange}
@@ -459,13 +459,13 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
                   />
                 </Form.Group>
 
-                <Header as='h5'>Time Window Access Control</Header>
+                <Header as='h5'>{t('token.edit.time_window_access_control')}</Header>
                 <Message size='small'>
-                  Allowed Hours: JSON array of hours (0-23), e.g., [9,10,11,12,13,14,15,16,17] for 9AM-5PM
+                  {t('token.edit.allowed_hours_help')}
                 </Message>
                 <Form.Field>
                   <Form.Input
-                    label='Allowed Hours (JSON array)'
+                    label={t('token.edit.allowed_hours')}
                     name='allowed_hours'
                     placeholder='[9,10,11,12,13,14,15,16,17]'
                     onChange={handleInputChange}
@@ -473,11 +473,11 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
                   />
                 </Form.Field>
                 <Message size='small'>
-                  Allowed Days: JSON array of weekdays (0=Sunday, 6=Saturday), e.g., [1,2,3,4,5] for Mon-Fri
+                  {t('token.edit.allowed_days_help')}
                 </Message>
                 <Form.Field>
                   <Form.Input
-                    label='Allowed Days (JSON array)'
+                    label={t('token.edit.allowed_days')}
                     name='allowed_days'
                     placeholder='[1,2,3,4,5]'
                     onChange={handleInputChange}
@@ -485,15 +485,15 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
                   />
                 </Form.Field>
 
-                <Header as='h5'>Model-Specific Quotas</Header>
+                <Header as='h5'>{t('token.edit.model_specific_quotas')}</Header>
                 <Message size='small'>
-                  JSON array of objects with model and limit fields. Example:
+                  {t('token.edit.model_quotas_help')}
                   <br />
                   <code>{'[{"model": "gpt-4", "limit": 100000}, {"model": "gpt-3.5-turbo", "limit": 500000}]'}</code>
                 </Message>
                 <Form.Field>
                   <Form.TextArea
-                    label='Model Quotas (JSON)'
+                    label={t('token.edit.model_quotas')}
                     name='model_quotas'
                     placeholder={'[{"model": "gpt-4", "limit": 100000}]'}
                     onChange={handleInputChange}
@@ -507,27 +507,27 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
         ) : (
           <div>
             <Message success>
-              <Message.Header>Batch Creation Complete</Message.Header>
+              <Message.Header>{t('token.batch.modal_complete_header')}</Message.Header>
               <p>
-                Successfully created: <strong>{results.success_count}</strong> tokens
-                {results.fail_count > 0 && (
-                  <span>, Failed: <strong style={{ color: 'red' }}>{results.fail_count}</strong></span>
-                )}
+                {t('token.batch.modal_complete_message', {
+                  success_count: results.success_count,
+                  fail_count: results.fail_count
+                })}
               </p>
             </Message>
             <Button primary onClick={copyAllKeys} style={{ marginBottom: '15px' }}>
-              <Icon name='copy' /> Copy All Keys
+              <Icon name='copy' /> {t('token.batch.copy_all_keys')}
             </Button>
             <Button onClick={() => setResults(null)} style={{ marginBottom: '15px' }}>
-              Create More Tokens
+              {t('token.batch.create_more')}
             </Button>
             <Table celled striped>
               <Table.Header>
                 <Table.Row>
-                  <Table.HeaderCell>Name</Table.HeaderCell>
-                  <Table.HeaderCell>Key</Table.HeaderCell>
-                  <Table.HeaderCell>Status</Table.HeaderCell>
-                  <Table.HeaderCell>Action</Table.HeaderCell>
+                  <Table.HeaderCell>{t('token.batch.table.name')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('token.batch.table.key')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('token.batch.table.status')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('token.batch.table.action')}</Table.HeaderCell>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
@@ -539,9 +539,9 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
                     </Table.Cell>
                     <Table.Cell>
                       {result.success ? (
-                        <span style={{ color: 'green' }}>Success</span>
+                        <span style={{ color: 'green' }}>{t('token.batch.table.success')}</span>
                       ) : (
-                        <span style={{ color: 'red' }}>{result.error || 'Failed'}</span>
+                        <span style={{ color: 'red' }}>{result.error || t('token.batch.table.failed')}</span>
                       )}
                     </Table.Cell>
                     <Table.Cell>
@@ -550,7 +550,7 @@ const BatchCreate = ({ open, onClose, onSuccess }) => {
                           size='tiny'
                           onClick={async () => {
                             if (await copy(`sk-${result.key}`)) {
-                              showSuccess('Key copied');
+                              showSuccess(t('token.batch.key_copied'));
                             }
                           }}
                         >
