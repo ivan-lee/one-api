@@ -190,6 +190,12 @@
       "stats": "Stats",
       "more_actions": "More Actions"
     },
+    "delete": {
+      "confirm_title": "Confirm Deletion",
+      "confirm_message": "Are you sure you want to delete token \"{{name}}\"? This action cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
     "edit": {
       "title_edit": "Update Token Information",
       "title_create": "Create New Token",

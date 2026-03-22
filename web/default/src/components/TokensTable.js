@@ -5,6 +5,7 @@ import {
   Dropdown,
   Form,
   Label,
+  Modal,
   Pagination,
   Popup,
   Table,
@@ -87,6 +88,10 @@ const TokensTable = () => {
   const [showTopUpModal, setShowTopUpModal] = useState(false);
   const [targetTokenIdx, setTargetTokenIdx] = useState(0);
   const [orderBy, setOrderBy] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [deleteTargetIdx, setDeleteTargetIdx] = useState(0);
+  const [deleteTargetName, setDeleteTargetName] = useState('');
 
   const loadTokens = async (startIdx) => {
     const res = await API.get(`/api/token/?p=${startIdx}&order=${orderBy}`);
@@ -249,6 +254,21 @@ const TokensTable = () => {
       setTokens(newTokens);
     } else {
       showError(message);
+    }
+  };
+
+  const confirmDelete = (id, idx, name) => {
+    setDeleteTargetId(id);
+    setDeleteTargetIdx(idx);
+    setDeleteTargetName(name);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDelete = async () => {
+    if (deleteTargetId) {
+      await manageToken(deleteTargetId, 'delete', deleteTargetIdx);
+      setShowDeleteConfirm(false);
+      setDeleteTargetId(null);
     }
   };
 
@@ -431,6 +451,23 @@ const TokensTable = () => {
                         />
                       </Button.Group>{' '}
                       
+                      <Button
+                        size={'tiny'}
+                        as={Link}
+                        to={'/token/edit/' + token.id}
+                      >
+                        {t('token.buttons.edit')}
+                      </Button>{' '}
+                      
+                      <Button
+                        size={'tiny'}
+                        color='blue'
+                        as={Link}
+                        to={'/token/stats/' + token.id}
+                      >
+                        {t('token.buttons.stats')}
+                      </Button>{' '}
+                      
                       <Dropdown
                         size='tiny'
                         icon='ellipsis horizontal'
@@ -444,7 +481,9 @@ const TokensTable = () => {
                             key: 'chat',
                             text: t('token.buttons.chat'),
                             icon: 'comment alternate',
-                            onClick: () => onOpenLink('', token.key),
+                            onClick: () => {
+                              onOpenLink('', token.key);
+                            },
                           },
                           {
                             key: 'enable_disable',
@@ -468,7 +507,7 @@ const TokensTable = () => {
                             color: 'red',
                             icon: 'trash alternate',
                             onClick: () => {
-                              manageToken(token.id, 'delete', idx);
+                              confirmDelete(token.id, idx, token.name);
                             },
                           },
                         ]}
@@ -524,6 +563,25 @@ const TokensTable = () => {
           </Table.Row>
         </Table.Footer>
       </Table>
+      
+      <Modal
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        size='mini'
+      >
+        <Modal.Header>{t('token.delete.confirm_title')}</Modal.Header>
+        <Modal.Content>
+          <p>{t('token.delete.confirm_message', { name: deleteTargetName })}</p>
+        </Modal.Content>
+        <Modal.Actions>
+          <Button onClick={() => setShowDeleteConfirm(false)}>
+            {t('token.delete.cancel')}
+          </Button>
+          <Button negative onClick={handleDelete}>
+            {t('token.delete.confirm')}
+          </Button>
+        </Modal.Actions>
+      </Modal>
     </>
   );
 };
