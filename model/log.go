@@ -214,8 +214,38 @@ func SearchAllLogs(keyword string) (logs []*Log, err error) {
 	return logs, err
 }
 
+// SearchAllLogsFuzzy performs fuzzy search on username, token_name, and model_name
+// with partial matching using LIKE queries
+func SearchAllLogsFuzzy(keyword string) (logs []*Log, err error) {
+	if keyword == "" {
+		err = LOG_DB.Order("id desc").Limit(config.MaxRecentItems).Find(&logs).Error
+		return logs, err
+	}
+	searchPattern := "%" + keyword + "%"
+	err = LOG_DB.Where(
+		"username LIKE ? OR token_name LIKE ? OR model_name LIKE ? OR content LIKE ?",
+		searchPattern, searchPattern, searchPattern, searchPattern,
+	).Order("id desc").Limit(config.MaxRecentItems).Find(&logs).Error
+	return logs, err
+}
+
 func SearchUserLogs(userId int, keyword string) (logs []*Log, err error) {
 	err = LOG_DB.Where("user_id = ? and type = ?", userId, keyword).Order("id desc").Limit(config.MaxRecentItems).Omit("id").Find(&logs).Error
+	return logs, err
+}
+
+// SearchUserLogsFuzzy performs fuzzy search for a specific user on token_name and model_name
+// with partial matching using LIKE queries
+func SearchUserLogsFuzzy(userId int, keyword string) (logs []*Log, err error) {
+	if keyword == "" {
+		err = LOG_DB.Where("user_id = ?", userId).Order("id desc").Limit(config.MaxRecentItems).Omit("id").Find(&logs).Error
+		return logs, err
+	}
+	searchPattern := "%" + keyword + "%"
+	err = LOG_DB.Where(
+		"user_id = ? AND (token_name LIKE ? OR model_name LIKE ? OR content LIKE ?)",
+		userId, searchPattern, searchPattern, searchPattern,
+	).Order("id desc").Limit(config.MaxRecentItems).Omit("id").Find(&logs).Error
 	return logs, err
 }
 
