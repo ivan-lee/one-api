@@ -18,6 +18,7 @@ import { StatusContext } from './context/Status';
 import Channel from './pages/Channel';
 import Token from './pages/Token';
 import EditToken from './pages/Token/EditToken';
+import TokenStats from './pages/Token/TokenStats';
 import EditChannel from './pages/Channel/EditChannel';
 import Redemption from './pages/Redemption';
 import EditRedemption from './pages/Redemption/EditRedemption';
@@ -29,6 +30,7 @@ import Dashboard from './pages/Dashboard';
 
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
+const Stats = lazy(() => import('./pages/Dashboard/Stats'));
 
 function App() {
   const [userState, userDispatch] = useContext(UserContext);
@@ -148,6 +150,14 @@ function App() {
           <Suspense fallback={<Loading></Loading>}>
             <EditToken />
           </Suspense>
+        }
+      />
+      <Route
+        path='/token/stats/:id'
+        element={
+          <PrivateRoute>
+            <TokenStats />
+          </PrivateRoute>
         }
       />
       <Route
@@ -303,6 +313,16 @@ function App() {
         element={
           <PrivateRoute>
             <Dashboard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path='/dashboard/stats'
+        element={
+          <PrivateRoute>
+            <Suspense fallback={<Loading></Loading>}>
+              <Stats />
+            </Suspense>
           </PrivateRoute>
         }
       />

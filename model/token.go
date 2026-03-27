@@ -34,6 +34,21 @@ type Token struct {
 	UsedQuota      int64   `json:"used_quota" gorm:"bigint;default:0"` // used quota
 	Models         *string `json:"models" gorm:"type:text"`            // allowed models
 	Subnet         *string `json:"subnet" gorm:"default:''"`           // allowed subnet
+
+	// Time-window quota control: limit values use -1 for unlimited
+	DailyQuotaLimit   int64   `json:"daily_quota_limit" gorm:"bigint;default:-1"`
+	HourlyQuotaLimit  int64   `json:"hourly_quota_limit" gorm:"bigint;default:-1"`
+	MonthlyQuotaLimit int64   `json:"monthly_quota_limit" gorm:"bigint;default:-1"`
+	QuotaResetTime    int64   `json:"quota_reset_time" gorm:"bigint;default:0"`
+	QuotaTimezone     *string `json:"quota_timezone" gorm:"type:varchar(64)"`
+	ModelQuotas       *string `json:"model_quotas" gorm:"type:text"`
+	RequestsPerMinute int     `json:"requests_per_minute" gorm:"type:int;default:-1"`
+	RequestsPerHour   int     `json:"requests_per_hour" gorm:"type:int;default:-1"`
+	AllowedHours      *string `json:"allowed_hours" gorm:"type:varchar(48)"`
+	AllowedDays       *string `json:"allowed_days" gorm:"type:varchar(32)"`
+	// Runtime-only quota tracking (not persisted)
+	DailyUsedQuota  int64 `json:"daily_used_quota" gorm:"-"`
+	HourlyUsedQuota int64 `json:"hourly_used_quota" gorm:"-"`
 }
 
 func GetAllUserTokens(userId int, startIdx int, num int, order string) ([]*Token, error) {
@@ -132,7 +147,9 @@ func (t *Token) Insert() error {
 // Update Make sure your token's fields is completed, because this will update non-zero values
 func (t *Token) Update() error {
 	var err error
-	err = DB.Model(t).Select("name", "status", "expired_time", "remain_quota", "unlimited_quota", "models", "subnet").Updates(t).Error
+	err = DB.Model(t).Select("name", "status", "expired_time", "remain_quota", "unlimited_quota", "models", "subnet",
+		"daily_quota_limit", "hourly_quota_limit", "monthly_quota_limit", "quota_timezone", "model_quotas",
+		"requests_per_minute", "requests_per_hour", "allowed_hours", "allowed_days").Updates(t).Error
 	return err
 }
 

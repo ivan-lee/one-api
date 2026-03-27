@@ -112,6 +112,27 @@
       "key_placeholder": "Please enter key",
       "batch": "Batch Create",
       "batch_placeholder": "Please enter keys, one per line",
+      "batch_create": {
+        "modal_title": "Batch Create Tokens",
+        "token_names_label": "Token Names (comma, newline, or semicolon separated)",
+        "token_names_placeholder": "token_1, token_2, token_3\nor one per line\nor separated by semicolons",
+        "tokens_will_be_created": "tokens will be created",
+        "max_100_warning": "(Maximum 100 allowed)",
+        "enter_names_above": "Enter token names above",
+        "modal_complete_header": "Batch Creation Complete",
+        "modal_complete_message": "Successfully created: {{success_count}} tokens{{#if fail_count}}, Failed: <strong style=\"color: red\">{{fail_count}}</strong>{{/if}}",
+        "copy_all_keys": "Copy All Keys",
+        "create_more": "Create More Tokens",
+        "key_copied": "Key copied",
+        "table": {
+          "name": "Name",
+          "key": "Key",
+          "status": "Status",
+          "action": "Action",
+          "success": "Success",
+          "failed": "Failed"
+        }
+      },
       "buttons": {
         "cancel": "Cancel",
         "submit": "Submit",
@@ -186,7 +207,17 @@
       "disable": "Disable",
       "edit": "Edit",
       "add": "Add New Token",
-      "refresh": "Refresh"
+      "refresh": "Refresh",
+      "stats": "Stats",
+      "more": "More",
+      "more_actions": "More Actions",
+      "batch": "Batch Create"
+    },
+    "delete": {
+      "confirm_title": "Confirm Deletion",
+      "confirm_message": "Are you sure you want to delete token \"{{name}}\"? This action cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
     },
     "edit": {
       "title_edit": "Update Token Information",
@@ -217,7 +248,30 @@
         "update_success": "Token updated successfully!",
         "create_success": "Token created successfully, please copy it from the list page!",
         "expire_time_invalid": "Invalid expiry time format!"
-      }
+      },
+      "advanced_quota_control": "Advanced Quota Control",
+      "quota_control_settings": "Quota Control Settings",
+      "quota_control_help": "Use -1 for unlimited. Leave empty for defaults. All fields are optional.",
+      "time_window_quota_limits": "Time-Window Quota Limits",
+      "daily_quota_limit": "Daily Quota Limit (-1 = unlimited)",
+      "hourly_quota_limit": "Hourly Quota Limit (-1 = unlimited)",
+      "monthly_quota_limit": "Monthly Quota Limit (-1 = unlimited)",
+      "quota_reset_and_timezone": "Quota Reset & Timezone",
+      "quota_reset_time": "Quota Reset Time",
+      "quota_reset_time_placeholder": "Select datetime",
+      "quota_timezone": "Quota Timezone",
+      "quota_timezone_placeholder": "Select timezone",
+      "rate_limits": "Rate Limits",
+      "requests_per_minute": "Requests Per Minute (-1 = unlimited)",
+      "requests_per_hour": "Requests Per Hour (-1 = unlimited)",
+      "time_window_access_control": "Time Window Access Control",
+      "allowed_hours_help": "Allowed Hours: JSON array of hours (0-23), e.g., [9,10,11,12,13,14,15,16,17] for 9AM-5PM",
+      "allowed_hours": "Allowed Hours (JSON array)",
+      "allowed_days_help": "Allowed Days: JSON array of weekdays (0=Sunday, 6=Saturday), e.g., [1,2,3,4,5] for Mon-Fri",
+      "allowed_days": "Allowed Days (JSON array)",
+      "model_specific_quotas": "Model-Specific Quotas",
+      "model_quotas_help": "JSON array of objects with model and limit fields. Example:",
+      "model_quotas": "Model Quotas (JSON)"
     },
     "copy_options": {
       "raw": "Copy Raw Token",
@@ -236,6 +290,73 @@
       "default": "Default Order",
       "by_remain": "Sort by Remaining Quota",
       "by_used": "Sort by Used Quota"
+    },
+    "stats": {
+      "title": "Token Usage Statistics",
+      "loading": "Loading statistics...",
+      "date_label": "Date",
+      "hour_label": "Hour",
+      "date_range": {
+        "7d": "Last 7 Days",
+        "14d": "Last 14 Days",
+        "30d": "Last 30 Days",
+        "90d": "Last 90 Days"
+      },
+      "buttons": {
+        "refresh": "Refresh",
+        "retry": "Retry"
+      },
+      "overview": {
+        "title": "Overview",
+        "total_requests": "Total Requests",
+        "total_quota": "Total Quota Used",
+        "total_tokens": "Total Tokens"
+      },
+      "charts": {
+        "daily_requests": "Daily Requests",
+        "daily_quota": "Daily Quota",
+        "daily_tokens": "Daily Tokens",
+        "hourly_usage": "Hourly Usage (Last 24 Hours)",
+        "model_usage": "Model Usage Breakdown",
+        "requests_tooltip": "Requests",
+        "quota_tooltip": "Quota",
+        "tokens_tooltip": "Tokens"
+      },
+      "no_data": {
+        "title": "No Data Available",
+        "description": "This token has not been used yet. Statistics will appear here after the token is used."
+      },
+      "error": {
+        "title": "Error",
+        "load_failed": "Failed to load token statistics"
+      }
+    },
+    "batch_create": {
+      "modal_title": "Batch Create Tokens",
+      "token_names_label": "Token Names (comma, newline, or semicolon separated)",
+      "token_names_placeholder": "token_1, token_2, token_3\nor one per line\nor separated by semicolons",
+      "tokens_will_be_created": "tokens will be created",
+      "max_100_warning": "(Maximum 100 allowed)",
+      "enter_names_above": "Enter token names above",
+      "modal_complete_header": "Batch Creation Complete",
+      "modal_complete_message": "Successfully created: {{success_count}} tokens{{#if fail_count}}, Failed: <strong style=\"color: red\">{{fail_count}}</strong>{{/if}}",
+      "copy_all_keys": "Copy All Keys",
+      "create_more": "Create More Tokens",
+      "key_copied": "Key copied",
+      "table": {
+        "name": "Name",
+        "key": "Key",
+        "status": "Status",
+        "action": "Action",
+        "success": "Success",
+        "failed": "Failed",
+        "copy": "Copy"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "create": "Create",
+        "close": "Close"
+      }
     }
   },
   "common": {
@@ -431,6 +552,46 @@
       "tooltip": {
         "date": "Date",
         "value": "Value"
+      }
+    },
+    "stats": {
+      "title": "System Statistics",
+      "loading": "Loading statistics...",
+      "date_range": {
+        "7d": "Last 7 Days",
+        "14d": "Last 14 Days",
+        "30d": "Last 30 Days",
+        "90d": "Last 90 Days"
+      },
+      "buttons": {
+        "refresh": "Refresh",
+        "retry": "Retry"
+      },
+      "overview": {
+        "title": "Overview",
+        "total_users": "Total Users",
+        "total_channels": "Total Channels",
+        "total_api_tokens": "Total API Tokens",
+        "total_requests": "Total Requests",
+        "total_quota": "Total Quota Used",
+        "total_prompt_tokens": "Total Prompt Tokens",
+        "total_completion_tokens": "Total Completion Tokens"
+      },
+      "charts": {
+        "model_usage": "Model Usage Breakdown",
+        "user_ranking": "Top Users by Quota",
+        "token_ranking": "Top Tokens by Quota",
+        "requests_tooltip": "Requests",
+        "quota_tooltip": "Quota ($)",
+        "tokens_tooltip": "Tokens"
+      },
+      "no_data": {
+        "title": "No Data Available",
+        "description": "No usage data available for the selected time range. Statistics will appear here after API requests are made."
+      },
+      "error": {
+        "title": "Error",
+        "load_failed": "Failed to load statistics"
       }
     }
   },

@@ -90,7 +90,12 @@ func SetApiRouter(router *gin.Engine) {
 			tokenRoute.GET("/", controller.GetAllTokens)
 			tokenRoute.GET("/search", controller.SearchTokens)
 			tokenRoute.GET("/:id", controller.GetToken)
+			tokenRoute.GET("/:id/stats", controller.GetTokenUsageStats)
+			tokenRoute.GET("/:id/stats/daily", controller.GetTokenDailyStats)
+			tokenRoute.GET("/:id/stats/hourly", controller.GetTokenHourlyStats)
+			tokenRoute.GET("/:id/stats/model", controller.GetTokenModelStats)
 			tokenRoute.POST("/", controller.AddToken)
+			tokenRoute.POST("/batch", controller.BatchCreateToken)
 			tokenRoute.PUT("/", controller.UpdateToken)
 			tokenRoute.DELETE("/:id", controller.DeleteToken)
 		}
@@ -116,6 +121,17 @@ func SetApiRouter(router *gin.Engine) {
 		groupRoute.Use(middleware.AdminAuth())
 		{
 			groupRoute.GET("/", controller.GetGroups)
+		}
+		statsRoute := apiRouter.Group("/stats")
+		{
+			// Admin-only endpoints for system-wide statistics
+			statsRoute.GET("/overview", middleware.AdminAuth(), controller.GetGlobalStats)
+			statsRoute.GET("/tokens", middleware.AdminAuth(), controller.GetTokenStats)
+			statsRoute.GET("/models", middleware.AdminAuth(), controller.GetModelStats)
+			statsRoute.GET("/users", middleware.AdminAuth(), controller.GetUserStats)
+			statsRoute.GET("/ranking", middleware.AdminAuth(), controller.GetStatsRanking)
+			// User endpoint for own statistics
+			statsRoute.GET("/self", middleware.UserAuth(), controller.GetUserSelfStats)
 		}
 	}
 }

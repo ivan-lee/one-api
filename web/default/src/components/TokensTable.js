@@ -5,6 +5,7 @@ import {
   Dropdown,
   Form,
   Label,
+  Modal,
   Pagination,
   Popup,
   Table,
@@ -87,6 +88,10 @@ const TokensTable = () => {
   const [showTopUpModal, setShowTopUpModal] = useState(false);
   const [targetTokenIdx, setTargetTokenIdx] = useState(0);
   const [orderBy, setOrderBy] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [deleteTargetIdx, setDeleteTargetIdx] = useState(0);
+  const [deleteTargetName, setDeleteTargetName] = useState('');
 
   const loadTokens = async (startIdx) => {
     const res = await API.get(`/api/token/?p=${startIdx}&order=${orderBy}`);
@@ -252,6 +257,21 @@ const TokensTable = () => {
     }
   };
 
+  const confirmDelete = (id, idx, name) => {
+    setDeleteTargetId(id);
+    setDeleteTargetIdx(idx);
+    setDeleteTargetName(name);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDelete = async () => {
+    if (deleteTargetId) {
+      await manageToken(deleteTargetId, 'delete', deleteTargetIdx);
+      setShowDeleteConfirm(false);
+      setDeleteTargetId(null);
+    }
+  };
+
   const searchTokens = async () => {
     if (searchKeyword === '') {
       // if keyword is blank, load files instead.
@@ -414,7 +434,7 @@ const TokensTable = () => {
                       : renderTimestamp(token.expired_time)}
                   </Table.Cell>
                   <Table.Cell>
-                    <div>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                       <Button.Group color='green' size={'tiny'}>
                         <Button
                           size={'tiny'}
@@ -430,62 +450,67 @@ const TokensTable = () => {
                           trigger={<></>}
                         />
                       </Button.Group>{' '}
-                      <Button.Group color='olive' size={'tiny'}>
-                        <Button
-                          size={'tiny'}
-                          positive
-                          onClick={() => onOpenLink('', token.key)}
-                        >
-                          {t('token.buttons.chat')}
-                        </Button>
-                        <Dropdown
-                          className='button icon'
-                          floating
-                          options={openLinkOptionsWithHandlers}
-                          trigger={<></>}
-                        />
-                      </Button.Group>{' '}
-                      <Popup
-                        trigger={
-                          <Button size='mini' negative>
-                            {t('token.buttons.delete')}
-                          </Button>
-                        }
-                        on='click'
-                        flowing
-                        hoverable
-                      >
-                        <Button
-                          size={'tiny'}
-                          negative
-                          onClick={() => {
-                            manageToken(token.id, 'delete', idx);
-                          }}
-                        >
-                          {t('token.buttons.confirm_delete')} {token.name}
-                        </Button>
-                      </Popup>
-                      <Button
-                        size={'tiny'}
-                        onClick={() => {
-                          manageToken(
-                            token.id,
-                            token.status === 1 ? 'disable' : 'enable',
-                            idx
-                          );
-                        }}
-                      >
-                        {token.status === 1
-                          ? t('token.buttons.disable')
-                          : t('token.buttons.enable')}
-                      </Button>
+                      
                       <Button
                         size={'tiny'}
                         as={Link}
                         to={'/token/edit/' + token.id}
                       >
                         {t('token.buttons.edit')}
-                      </Button>
+                      </Button>{' '}
+                      
+                      <Button
+                        size={'tiny'}
+                        color='blue'
+                        as={Link}
+                        to={'/token/stats/' + token.id}
+                      >
+                        {t('token.buttons.stats')}
+                      </Button>{' '}
+                      
+                      
+                      <Dropdown
+                        size='tiny'
+                        icon='ellipsis horizontal'
+                        floating
+                        button
+                        className='icon'
+                        options={[
+                          {
+                            key: 'chat',
+                            text: t('token.buttons.chat'),
+                            icon: 'comment alternate',
+                            onClick: () => {
+                              onOpenLink('', token.key);
+                            },
+                          },
+                          {
+                            key: 'enable_disable',
+                            text: token.status === 1 ? t('token.buttons.disable') : t('token.buttons.enable'),
+                            icon: token.status === 1 ? 'ban' : 'check',
+                            onClick: () => {
+                              manageToken(
+                                token.id,
+                                token.status === 1 ? 'disable' : 'enable',
+                                idx
+                              );
+                            },
+                          },
+                          {
+                            key: 'divider',
+                            content: <Dropdown.Divider />
+                          },
+                          {
+                            key: 'delete',
+                            text: t('token.buttons.delete'),
+                            color: 'red',
+                            icon: 'trash alternate',
+                            onClick: () => {
+                              confirmDelete(token.id, idx, token.name);
+                            },
+                          },
+                        ]}
+                      />
                     </div>
                   </Table.Cell>
                 </Table.Row>
@@ -537,6 +562,25 @@ const TokensTable = () => {
           </Table.Row>
         </Table.Footer>
       </Table>
+      
+      <Modal
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        size='mini'
+      >
+        <Modal.Header>{t('token.delete.confirm_title')}</Modal.Header>
+        <Modal.Content>
+          <p>{t('token.delete.confirm_message', { name: deleteTargetName })}</p>
+        </Modal.Content>
+        <Modal.Actions>
+          <Button onClick={() => setShowDeleteConfirm(false)}>
+            {t('token.delete.cancel')}
+          </Button>
+          <Button negative onClick={handleDelete}>
+            {t('token.delete.confirm')}
+          </Button>
+        </Modal.Actions>
+      </Modal>
     </>
   );
 };

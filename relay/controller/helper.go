@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/songquanpeng/one-api/common/helper"
+	"github.com/songquanpeng/one-api/middleware"
 	"github.com/songquanpeng/one-api/relay/constant/role"
 
 	"github.com/gin-gonic/gin"
@@ -109,8 +110,6 @@ func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.M
 	}
 	totalTokens := promptTokens + completionTokens
 	if totalTokens == 0 {
-		// in this case, must be some error happened
-		// we cannot just return, because we may have to return the pre-consumed quota
 		quota = 0
 	}
 	quotaDelta := quota - preConsumedQuota
@@ -121,6 +120,9 @@ func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.M
 	err = model.CacheUpdateUserQuota(ctx, meta.UserId)
 	if err != nil {
 		logger.Error(ctx, "error update user quota cache: "+err.Error())
+	}
+	if err := middleware.DecreaseTokenQuotaWithTimeWindow(meta.TokenId, quota); err != nil {
+		logger.Error(ctx, "error consuming token time-window quota: "+err.Error())
 	}
 	logContent := fmt.Sprintf("倍率：%.2f × %.2f × %.2f", modelRatio, groupRatio, completionRatio)
 	model.RecordConsumeLog(ctx, &model.Log{

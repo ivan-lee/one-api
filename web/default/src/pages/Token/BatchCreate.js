@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Button,
@@ -8,8 +8,10 @@ import {
   Card,
   Accordion,
   Icon,
+  Modal,
+  Table,
+  TextArea,
 } from 'semantic-ui-react';
-import { useNavigate, useParams } from 'react-router-dom';
 import {
   API,
   copy,
@@ -31,22 +33,20 @@ const timezoneOptions = [
   { key: 'Europe/Paris', text: 'Europe/Paris', value: 'Europe/Paris' },
 ];
 
-const EditToken = () => {
+const BatchCreate = ({ open, onClose, onSuccess }) => {
   const { t } = useTranslation();
-  const params = useParams();
-  const tokenId = params.id;
-  const isEdit = tokenId !== undefined;
-  const [loading, setLoading] = useState(isEdit);
+  const [loading, setLoading] = useState(false);
   const [modelOptions, setModelOptions] = useState([]);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [namesText, setNamesText] = useState('');
+  const [results, setResults] = useState(null);
+
   const originInputs = {
-    name: '',
-    remain_quota: isEdit ? 0 : 500000,
+    remain_quota: 500000,
     expired_time: -1,
     unlimited_quota: false,
     models: [],
     subnet: '',
-    // Time-window quota control fields
     daily_quota_limit: -1,
     hourly_quota_limit: -1,
     monthly_quota_limit: -1,
@@ -58,11 +58,11 @@ const EditToken = () => {
     allowed_hours: '',
     allowed_days: '',
   };
+
   const [inputs, setInputs] = useState(originInputs);
-  const { 
-    name, 
-    remain_quota, 
-    expired_time, 
+  const {
+    remain_quota,
+    expired_time,
     unlimited_quota,
     daily_quota_limit,
     hourly_quota_limit,
@@ -75,13 +75,19 @@ const EditToken = () => {
     allowed_hours,
     allowed_days,
   } = inputs;
-  const navigate = useNavigate();
+
+  // Parse names from textarea (comma, newline, or semicolon separated)
+  const parsedNames = namesText
+    .split(/[,\n;]+/)
+    .map((name) => name.trim())
+    .filter((name) => name.length > 0);
+
+  const namesCount = parsedNames.length;
+
   const handleInputChange = (e, { name, value }) => {
     setInputs((inputs) => ({ ...inputs, [name]: value }));
   };
-  const handleCancel = () => {
-    navigate('/token');
-  };
+
   const setExpiredTime = (month, day, hour, minute) => {
     let now = new Date();
     let timestamp = now.getTime() / 1000;
@@ -99,48 +105,6 @@ const EditToken = () => {
 
   const setUnlimitedQuota = () => {
     setInputs({ ...inputs, unlimited_quota: !unlimited_quota });
-  };
-
-  const loadToken = async () => {
-    try {
-      let res = await API.get(`/api/token/${tokenId}`);
-      const { success, message, data } = res.data || {};
-      if (success && data) {
-        if (data.expired_time !== -1) {
-          data.expired_time = timestamp2string(data.expired_time);
-        }
-        if (data.models === '') {
-          data.models = [];
-        } else {
-          data.models = data.models.split(',');
-        }
-        // Handle nullable string fields
-        if (data.quota_timezone === null) {
-          data.quota_timezone = '';
-        }
-        if (data.model_quotas === null) {
-          data.model_quotas = '';
-        }
-        if (data.allowed_hours === null) {
-          data.allowed_hours = '';
-        }
-        if (data.allowed_days === null) {
-          data.allowed_days = '';
-        }
-        // Handle quota_reset_time
-        if (data.quota_reset_time && data.quota_reset_time !== 0) {
-          data.quota_reset_time = timestamp2string(data.quota_reset_time);
-        } else {
-          data.quota_reset_time = '';
-        }
-        setInputs(data);
-      } else {
-        showError(message || 'Failed to load token');
-      }
-    } catch (error) {
-      showError(error.message || 'Network error');
-    }
-    setLoading(false);
   };
 
   const loadAvailableModels = async () => {
@@ -165,38 +129,44 @@ const EditToken = () => {
   };
 
   useEffect(() => {
-    if (isEdit) {
-      loadToken().catch((error) => {
-        showError(error.message || 'Failed to load token');
-        setLoading(false);
+    if (open) {
+      loadAvailableModels().catch((error) => {
+        showError(error.message || 'Failed to load models');
       });
     }
-    loadAvailableModels().catch((error) => {
-      showError(error.message || 'Failed to load models');
-    });
-  }, []);
+  }, [open]);
 
   const submit = async () => {
-    if (!isEdit && inputs.name === '') return;
+    if (namesCount === 0) {
+      showError('Please enter at least one token name');
+      return;
+    }
+    if (namesCount > 100) {
+      showError('Maximum 100 tokens allowed per batch');
+      return;
+    }
+
+    setLoading(true);
     let localInputs = { ...inputs };
     localInputs.remain_quota = parseInt(localInputs.remain_quota);
     if (localInputs.expired_time !== -1) {
       let time = Date.parse(localInputs.expired_time);
       if (isNaN(time)) {
         showError(t('token.edit.messages.expire_time_invalid'));
+        setLoading(false);
         return;
       }
       localInputs.expired_time = Math.ceil(time / 1000);
     }
     localInputs.models = localInputs.models.join(',');
-    
+
     // Process quota limit fields - convert empty/0 to -1 (unlimited)
     localInputs.daily_quota_limit = parseInt(localInputs.daily_quota_limit) || -1;
     localInputs.hourly_quota_limit = parseInt(localInputs.hourly_quota_limit) || -1;
     localInputs.monthly_quota_limit = parseInt(localInputs.monthly_quota_limit) || -1;
     localInputs.requests_per_minute = parseInt(localInputs.requests_per_minute) || -1;
     localInputs.requests_per_hour = parseInt(localInputs.requests_per_hour) || -1;
-    
+
     // Process quota_reset_time
     if (localInputs.quota_reset_time && localInputs.quota_reset_time !== '') {
       let resetTime = Date.parse(localInputs.quota_reset_time);
@@ -208,7 +178,7 @@ const EditToken = () => {
     } else {
       localInputs.quota_reset_time = 0;
     }
-    
+
     // Process nullable string fields
     if (localInputs.quota_timezone === '') {
       localInputs.quota_timezone = null;
@@ -222,47 +192,76 @@ const EditToken = () => {
     if (localInputs.allowed_days === '') {
       localInputs.allowed_days = null;
     }
-    
-    let res;
-    if (isEdit) {
-      res = await API.put(`/api/token/`, {
-        ...localInputs,
-        id: parseInt(tokenId),
-      });
-    } else {
-      res = await API.post(`/api/token/`, localInputs);
-    }
-    const { success, message } = res.data;
-    if (success) {
-      if (isEdit) {
-        showSuccess(t('token.edit.messages.update_success'));
+
+    // Add names as a string (comma-separated)
+    localInputs.names = parsedNames.join(',');
+
+    try {
+      const res = await API.post('/api/token/batch', localInputs);
+      const { success, message, data } = res.data;
+      if (success) {
+        showSuccess(`Successfully created ${data.success_count} tokens`);
+        setResults(data);
+        if (onSuccess) {
+          onSuccess();
+        }
       } else {
-        showSuccess(t('token.edit.messages.create_success'));
-        setInputs(originInputs);
+        showError(message);
       }
-    } else {
-      showError(message);
+    } catch (error) {
+      showError(error.message || 'Network error');
+    }
+    setLoading(false);
+  };
+
+  const copyAllKeys = async () => {
+    if (!results || !results.results) return;
+    const keys = results.results
+      .filter((r) => r.success)
+      .map((r) => `sk-${r.key}`)
+      .join('\n');
+    if (await copy(keys)) {
+      showSuccess('All keys copied to clipboard');
     }
   };
 
+  const handleClose = () => {
+    setNamesText('');
+    setInputs(originInputs);
+    setResults(null);
+    setShowAdvanced(false);
+    onClose();
+  };
+
   return (
-    <div className='dashboard-container'>
-      <Card fluid className='chart-card'>
-        <Card.Content>
-          <Card.Header className='header'>
-            {isEdit ? t('token.edit.title_edit') : t('token.edit.title_create')}
-          </Card.Header>
+    <Modal open={open} onClose={handleClose} size="large">
+      <Modal.Header>{t('token.batch_create.modal_title')}</Modal.Header>
+      <Modal.Content scrolling>
+        {!results ? (
           <Form loading={loading} autoComplete='new-password'>
             <Form.Field>
-              <Form.Input
-                label={t('token.edit.name')}
-                name='name'
-                placeholder={t('token.edit.name_placeholder')}
-                onChange={handleInputChange}
-                value={name}
-                autoComplete='new-password'
-                required={!isEdit}
+              <label>{t('token.batch_create.token_names_label')}</label>
+              <TextArea
+                placeholder={t('token.batch_create.token_names_placeholder')}
+                value={namesText}
+                onChange={(e, { value }) => setNamesText(value)}
+                rows={5}
+                style={{ fontFamily: 'monospace' }}
               />
+              <Message info size='small'>
+                {namesCount > 0 ? (
+                  <span>
+                    <strong>{namesCount}</strong> {t('token.batch_create.tokens_will_be_created')}
+                    {namesCount > 100 && (
+                      <span style={{ color: 'red', marginLeft: '10px' }}>
+                        {t('token.batch_create.max_100_warning')}
+                      </span>
+                    )}
+                  </span>
+                ) : (
+                  t('token.batch_create.enter_names_above')
+                )}
+              </Message>
             </Form.Field>
             <Form.Field>
               <Form.Dropdown
@@ -303,9 +302,10 @@ const EditToken = () => {
                 type='datetime-local'
               />
             </Form.Field>
-            <div style={{ lineHeight: '40px' }}>
+            <div style={{ lineHeight: '40px', marginBottom: '10px' }}>
               <Button
                 type={'button'}
+                size='small'
                 onClick={() => {
                   setExpiredTime(0, 0, 0, 0);
                 }}
@@ -314,6 +314,7 @@ const EditToken = () => {
               </Button>
               <Button
                 type={'button'}
+                size='small'
                 onClick={() => {
                   setExpiredTime(1, 0, 0, 0);
                 }}
@@ -322,6 +323,7 @@ const EditToken = () => {
               </Button>
               <Button
                 type={'button'}
+                size='small'
                 onClick={() => {
                   setExpiredTime(0, 1, 0, 0);
                 }}
@@ -330,6 +332,7 @@ const EditToken = () => {
               </Button>
               <Button
                 type={'button'}
+                size='small'
                 onClick={() => {
                   setExpiredTime(0, 0, 1, 0);
                 }}
@@ -338,6 +341,7 @@ const EditToken = () => {
               </Button>
               <Button
                 type={'button'}
+                size='small'
                 onClick={() => {
                   setExpiredTime(0, 0, 0, 1);
                 }}
@@ -371,7 +375,7 @@ const EditToken = () => {
                 ? t('token.edit.buttons.cancel_unlimited')
                 : t('token.edit.buttons.unlimited_quota')}
             </Button>
-            
+
             <Accordion fluid styled style={{ marginTop: '20px' }}>
               <Accordion.Title
                 active={showAdvanced}
@@ -385,7 +389,7 @@ const EditToken = () => {
                   <Message.Header>{t('token.edit.quota_control_settings')}</Message.Header>
                   <p>{t('token.edit.quota_control_help')}</p>
                 </Message>
-                
+
                 <Header as='h5'>{t('token.edit.time_window_quota_limits')}</Header>
                 <Form.Group widths='equal'>
                   <Form.Input
@@ -413,7 +417,7 @@ const EditToken = () => {
                     type='number'
                   />
                 </Form.Group>
-                
+
                 <Header as='h5'>{t('token.edit.quota_reset_and_timezone')}</Header>
                 <Form.Group widths='equal'>
                   <Form.Input
@@ -434,7 +438,7 @@ const EditToken = () => {
                     clearable
                   />
                 </Form.Group>
-                
+
                 <Header as='h5'>{t('token.edit.rate_limits')}</Header>
                 <Form.Group widths='equal'>
                   <Form.Input
@@ -454,7 +458,7 @@ const EditToken = () => {
                     type='number'
                   />
                 </Form.Group>
-                
+
                 <Header as='h5'>{t('token.edit.time_window_access_control')}</Header>
                 <Message size='small'>
                   {t('token.edit.allowed_hours_help')}
@@ -480,7 +484,7 @@ const EditToken = () => {
                     value={allowed_days}
                   />
                 </Form.Field>
-                
+
                 <Header as='h5'>{t('token.edit.model_specific_quotas')}</Header>
                 <Message size='small'>
                   {t('token.edit.model_quotas_help')}
@@ -499,18 +503,87 @@ const EditToken = () => {
                 </Form.Field>
               </Accordion.Content>
             </Accordion>
-            
-            <Button floated='right' positive onClick={submit}>
-              {t('token.edit.buttons.submit')}
-            </Button>
-            <Button floated='right' onClick={handleCancel}>
-              {t('token.edit.buttons.cancel')}
-            </Button>
           </Form>
-        </Card.Content>
-      </Card>
-    </div>
+        ) : (
+          <div>
+            <Message success>
+              <Message.Header>{t('token.batch_create.modal_complete_header')}</Message.Header>
+              <p>
+                成功创建：<strong>{results.success_count}</strong> 个令牌
+                {results.fail_count > 0 && (
+                  <span>，失败：<strong style={{ color: 'red' }}>{results.fail_count}</strong></span>
+                )}
+              </p>
+            </Message>
+            <Button primary onClick={copyAllKeys} style={{ marginBottom: '15px' }}>
+              <Icon name='copy' /> {t('token.batch_create.copy_all_keys')}
+            </Button>
+            <Button onClick={() => setResults(null)} style={{ marginBottom: '15px' }}>
+              {t('token.batch_create.create_more')}
+            </Button>
+            <Table celled striped>
+              <Table.Header>
+                <Table.Row>
+                  <Table.HeaderCell>{t('token.batch_create.table.name')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('token.batch_create.table.key')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('token.batch_create.table.status')}</Table.HeaderCell>
+                  <Table.HeaderCell>{t('token.batch_create.table.action')}</Table.HeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {results.results.map((result, idx) => (
+                  <Table.Row key={idx}>
+                    <Table.Cell>{result.name}</Table.Cell>
+                    <Table.Cell>
+                      <code style={{ userSelect: 'all' }}>sk-{result.key}</code>
+                    </Table.Cell>
+                    <Table.Cell>
+                      {result.success ? (
+                        <span style={{ color: 'green' }}>{t('token.batch_create.table.success')}</span>
+                      ) : (
+                        <span style={{ color: 'red' }}>{result.error || t('token.batch_create.table.failed')}</span>
+                      )}
+                    </Table.Cell>
+                    <Table.Cell>
+                      {result.success && (
+                        <Button
+                          size='tiny'
+                          onClick={async () => {
+                            if (await copy(`sk-${result.key}`)) {
+                              showSuccess(t('token.batch_create.key_copied'));
+                            }
+                          }}
+                        >
+                          {t('token.batch_create.table.copy')}
+                        </Button>
+                      )}
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table>
+          </div>
+        )}
+      </Modal.Content>
+      <Modal.Actions>
+        {!results ? (
+          <>
+            <Button onClick={handleClose}>{t('token.batch_create.buttons.cancel')}</Button>
+            <Button
+              positive
+              onClick={submit}
+              loading={loading}
+              disabled={namesCount === 0 || namesCount > 100}
+            >
+              {t('token.batch_create.buttons.create')} {namesCount > 0 ? `(${namesCount})` : ''}
+            </Button>
+          </>
+        ) : (
+          <Button onClick={handleClose}>{t('token.batch_create.buttons.close')}</Button>
+        )}
+      </Modal.Actions>
+    </Modal>
   );
 };
 
-export default EditToken;
+export default BatchCreate;

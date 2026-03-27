@@ -122,6 +122,41 @@ func GetAllLogs(logType int, startTimestamp int64, endTimestamp int64, modelName
 	return logs, err
 }
 
+func GetAllLogsWithCount(logType int, startTimestamp int64, endTimestamp int64, modelName string, username string, tokenName string, startIdx int, num int, channel int) (logs []*Log, total int64, err error) {
+	var tx *gorm.DB
+	if logType == LogTypeUnknown {
+		tx = LOG_DB
+	} else {
+		tx = LOG_DB.Where("type = ?", logType)
+	}
+	if modelName != "" {
+		tx = tx.Where("model_name = ?", modelName)
+	}
+	if username != "" {
+		tx = tx.Where("username = ?", username)
+	}
+	if tokenName != "" {
+		tx = tx.Where("token_name = ?", tokenName)
+	}
+	if startTimestamp != 0 {
+		tx = tx.Where("created_at >= ?", startTimestamp)
+	}
+	if endTimestamp != 0 {
+		tx = tx.Where("created_at <= ?", endTimestamp)
+	}
+	if channel != 0 {
+		tx = tx.Where("channel_id = ?", channel)
+	}
+	// Get total count before pagination
+	err = tx.Model(&Log{}).Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	// Get paginated logs
+	err = tx.Order("id desc").Limit(num).Offset(startIdx).Find(&logs).Error
+	return logs, total, err
+}
+
 func GetUserLogs(userId int, logType int, startTimestamp int64, endTimestamp int64, modelName string, tokenName string, startIdx int, num int) (logs []*Log, err error) {
 	var tx *gorm.DB
 	if logType == LogTypeUnknown {
@@ -145,13 +180,72 @@ func GetUserLogs(userId int, logType int, startTimestamp int64, endTimestamp int
 	return logs, err
 }
 
+func GetUserLogsWithCount(userId int, logType int, startTimestamp int64, endTimestamp int64, modelName string, tokenName string, startIdx int, num int) (logs []*Log, total int64, err error) {
+	var tx *gorm.DB
+	if logType == LogTypeUnknown {
+		tx = LOG_DB.Where("user_id = ?", userId)
+	} else {
+		tx = LOG_DB.Where("user_id = ? and type = ?", userId, logType)
+	}
+	if modelName != "" {
+		tx = tx.Where("model_name = ?", modelName)
+	}
+	if tokenName != "" {
+		tx = tx.Where("token_name = ?", tokenName)
+	}
+	if startTimestamp != 0 {
+		tx = tx.Where("created_at >= ?", startTimestamp)
+	}
+	if endTimestamp != 0 {
+		tx = tx.Where("created_at <= ?", endTimestamp)
+	}
+	// Get total count before pagination
+	err = tx.Model(&Log{}).Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	// Get paginated logs
+	err = tx.Order("id desc").Limit(num).Offset(startIdx).Omit("id").Find(&logs).Error
+	return logs, total, err
+}
+
 func SearchAllLogs(keyword string) (logs []*Log, err error) {
 	err = LOG_DB.Where("type = ? or content LIKE ?", keyword, keyword+"%").Order("id desc").Limit(config.MaxRecentItems).Find(&logs).Error
 	return logs, err
 }
 
+// SearchAllLogsFuzzy performs fuzzy search on username, token_name, and model_name
+// with partial matching using LIKE queries
+func SearchAllLogsFuzzy(keyword string) (logs []*Log, err error) {
+	if keyword == "" {
+		err = LOG_DB.Order("id desc").Limit(config.MaxRecentItems).Find(&logs).Error
+		return logs, err
+	}
+	searchPattern := "%" + keyword + "%"
+	err = LOG_DB.Where(
+		"username LIKE ? OR token_name LIKE ? OR model_name LIKE ? OR content LIKE ?",
+		searchPattern, searchPattern, searchPattern, searchPattern,
+	).Order("id desc").Limit(config.MaxRecentItems).Find(&logs).Error
+	return logs, err
+}
+
 func SearchUserLogs(userId int, keyword string) (logs []*Log, err error) {
 	err = LOG_DB.Where("user_id = ? and type = ?", userId, keyword).Order("id desc").Limit(config.MaxRecentItems).Omit("id").Find(&logs).Error
+	return logs, err
+}
+
+// SearchUserLogsFuzzy performs fuzzy search for a specific user on token_name and model_name
+// with partial matching using LIKE queries
+func SearchUserLogsFuzzy(userId int, keyword string) (logs []*Log, err error) {
+	if keyword == "" {
+		err = LOG_DB.Where("user_id = ?", userId).Order("id desc").Limit(config.MaxRecentItems).Omit("id").Find(&logs).Error
+		return logs, err
+	}
+	searchPattern := "%" + keyword + "%"
+	err = LOG_DB.Where(
+		"user_id = ? AND (token_name LIKE ? OR model_name LIKE ? OR content LIKE ?)",
+		userId, searchPattern, searchPattern, searchPattern,
+	).Order("id desc").Limit(config.MaxRecentItems).Omit("id").Find(&logs).Error
 	return logs, err
 }
 
@@ -248,4 +342,168 @@ func SearchLogsByDayAndModel(userId, start, end int) (LogStatistics []*LogStatis
 	`, userId, start, end).Scan(&LogStatistics).Error
 
 	return LogStatistics, err
+}
+
+// TokenUsageStats represents overall token usage statistics
+type TokenUsageStats struct {
+	TotalRequests     int   `json:"total_requests" gorm:"column:total_requests"`
+	TotalQuota        int   `json:"total_quota" gorm:"column:total_quota"`
+	TotalPromptTokens int   `json:"total_prompt_tokens" gorm:"column:total_prompt_tokens"`
+	TotalCompletion   int   `json:"total_completion_tokens" gorm:"column:total_completion_tokens"`
+}
+
+// TokenDailyStats represents daily token usage statistics
+type TokenDailyStats struct {
+	Day              string `json:"day" gorm:"column:day"`
+	RequestCount     int    `json:"request_count" gorm:"column:request_count"`
+	Quota            int    `json:"quota" gorm:"column:quota"`
+	PromptTokens     int    `json:"prompt_tokens" gorm:"column:prompt_tokens"`
+	CompletionTokens int    `json:"completion_tokens" gorm:"column:completion_tokens"`
+}
+
+// TokenHourlyStats represents hourly token usage statistics
+type TokenHourlyStats struct {
+	Hour             string `json:"hour" gorm:"column:hour"`
+	RequestCount     int    `json:"request_count" gorm:"column:request_count"`
+	Quota            int    `json:"quota" gorm:"column:quota"`
+	PromptTokens     int    `json:"prompt_tokens" gorm:"column:prompt_tokens"`
+	CompletionTokens int    `json:"completion_tokens" gorm:"column:completion_tokens"`
+}
+
+// TokenModelStats represents token usage statistics by model
+type TokenModelStats struct {
+	ModelName        string `json:"model_name" gorm:"column:model_name"`
+	RequestCount     int    `json:"request_count" gorm:"column:request_count"`
+	Quota            int    `json:"quota" gorm:"column:quota"`
+	PromptTokens     int    `json:"prompt_tokens" gorm:"column:prompt_tokens"`
+	CompletionTokens int    `json:"completion_tokens" gorm:"column:completion_tokens"`
+}
+
+// GetTokenUsageStats returns overall usage statistics for a token
+func GetTokenUsageStats(tokenName string, startTimestamp, endTimestamp int64) (*TokenUsageStats, error) {
+	var stats TokenUsageStats
+	ifnull := "ifnull"
+	if common.UsingPostgreSQL {
+		ifnull = "COALESCE"
+	}
+
+	query := LOG_DB.Table("logs").
+		Select(fmt.Sprintf("%s(count(*), 0) as total_requests, %s(sum(quota), 0) as total_quota, %s(sum(prompt_tokens), 0) as total_prompt_tokens, %s(sum(completion_tokens), 0) as total_completion_tokens", ifnull, ifnull, ifnull, ifnull)).
+		Where("type = ?", LogTypeConsume).
+		Where("token_name = ?", tokenName)
+
+	if startTimestamp != 0 {
+		query = query.Where("created_at >= ?", startTimestamp)
+	}
+	if endTimestamp != 0 {
+		query = query.Where("created_at <= ?", endTimestamp)
+	}
+
+	err := query.Scan(&stats).Error
+	if err != nil {
+		return nil, err
+	}
+	return &stats, nil
+}
+
+// GetTokenDailyStats returns daily usage statistics for a token
+func GetTokenDailyStats(tokenName string, startTimestamp, endTimestamp int64) ([]*TokenDailyStats, error) {
+	var stats []*TokenDailyStats
+	groupSelect := "DATE_FORMAT(FROM_UNIXTIME(created_at), '%Y-%m-%d') as day"
+
+	if common.UsingPostgreSQL {
+		groupSelect = "TO_CHAR(date_trunc('day', to_timestamp(created_at)), 'YYYY-MM-DD') as day"
+	}
+
+	if common.UsingSQLite {
+		groupSelect = "strftime('%Y-%m-%d', datetime(created_at, 'unixepoch')) as day"
+	}
+
+	query := `
+		SELECT ` + groupSelect + `,
+		count(1) as request_count,
+		sum(quota) as quota,
+		sum(prompt_tokens) as prompt_tokens,
+		sum(completion_tokens) as completion_tokens
+		FROM logs
+		WHERE type = ?
+		AND token_name = ?
+	`
+	args := []interface{}{LogTypeConsume, tokenName}
+
+	if startTimestamp != 0 {
+		query += " AND created_at >= ?"
+		args = append(args, startTimestamp)
+	}
+	if endTimestamp != 0 {
+		query += " AND created_at <= ?"
+		args = append(args, endTimestamp)
+	}
+
+	query += " GROUP BY day ORDER BY day"
+
+	err := LOG_DB.Raw(query, args...).Scan(&stats).Error
+	return stats, err
+}
+
+// GetTokenHourlyStats returns hourly usage statistics for a token
+func GetTokenHourlyStats(tokenName string, startTimestamp, endTimestamp int64) ([]*TokenHourlyStats, error) {
+	var stats []*TokenHourlyStats
+	groupSelect := "DATE_FORMAT(FROM_UNIXTIME(created_at), '%Y-%m-%d %H:00') as hour"
+
+	if common.UsingPostgreSQL {
+		groupSelect = "TO_CHAR(date_trunc('hour', to_timestamp(created_at)), 'YYYY-MM-DD HH24:00') as hour"
+	}
+
+	if common.UsingSQLite {
+		groupSelect = "strftime('%Y-%m-%d %H:00', datetime(created_at, 'unixepoch')) as hour"
+	}
+
+	query := `
+		SELECT ` + groupSelect + `,
+		count(1) as request_count,
+		sum(quota) as quota,
+		sum(prompt_tokens) as prompt_tokens,
+		sum(completion_tokens) as completion_tokens
+		FROM logs
+		WHERE type = ?
+		AND token_name = ?
+	`
+	args := []interface{}{LogTypeConsume, tokenName}
+
+	if startTimestamp != 0 {
+		query += " AND created_at >= ?"
+		args = append(args, startTimestamp)
+	}
+	if endTimestamp != 0 {
+		query += " AND created_at <= ?"
+		args = append(args, endTimestamp)
+	}
+
+	query += " GROUP BY hour ORDER BY hour"
+
+	err := LOG_DB.Raw(query, args...).Scan(&stats).Error
+	return stats, err
+}
+
+// GetTokenModelStats returns usage statistics by model for a token
+func GetTokenModelStats(tokenName string, startTimestamp, endTimestamp int64) ([]*TokenModelStats, error) {
+	var stats []*TokenModelStats
+
+	query := LOG_DB.Table("logs").
+		Select("model_name, count(1) as request_count, sum(quota) as quota, sum(prompt_tokens) as prompt_tokens, sum(completion_tokens) as completion_tokens").
+		Where("type = ?", LogTypeConsume).
+		Where("token_name = ?", tokenName).
+		Group("model_name").
+		Order("request_count DESC")
+
+	if startTimestamp != 0 {
+		query = query.Where("created_at >= ?", startTimestamp)
+	}
+	if endTimestamp != 0 {
+		query = query.Where("created_at <= ?", endTimestamp)
+	}
+
+	err := query.Scan(&stats).Error
+	return stats, err
 }
