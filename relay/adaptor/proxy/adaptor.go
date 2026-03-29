@@ -84,6 +84,10 @@ func (a *Adaptor) ConvertImageRequest(request *model.ImageRequest) (any, error) 
 	return nil, errors.Errorf("not implement")
 }
 
+func (a *Adaptor) ConvertRerankRequest(request *model.RerankRequest) (any, error) {
+	return nil, errors.Errorf("not implement")
+}
+
 func (a *Adaptor) DoRequest(c *gin.Context, meta *meta.Meta, requestBody io.Reader) (*http.Response, error) {
 	return channelhelper.DoRequestHelper(a, c, meta, requestBody)
 }

@@ -39,6 +39,10 @@ func (*Adaptor) ConvertImageRequest(request *model.ImageRequest) (any, error) {
 	}, nil
 }
 
+func (a *Adaptor) ConvertRerankRequest(request *model.RerankRequest) (any, error) {
+	return nil, errors.New("not implemented")
+}
+
 func (a *Adaptor) ConvertRequest(c *gin.Context, relayMode int, request *model.GeneralOpenAIRequest) (any, error) {
 	if !request.Stream {
 		// TODO: support non-stream mode

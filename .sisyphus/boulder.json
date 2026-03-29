@@ -1,25 +1,18 @@
 {
-  "active_plan": "/Users/shichenhao/Documents/code/one-api/.sisyphus/plans/production-enhancement.md",
-  "started_at": "2026-03-22T06:09:05.905Z",
+  "active_plan": "/Users/shichenhao/Documents/code/one-api/.sisyphus/plans/rerank-support.md",
+  "started_at": "2026-03-29T15:05:52.005Z",
   "session_ids": [
-    "ses_2ec3ec966ffePpF5fPD5KNCrc3",
-    "ses_2ebd3f085ffer9dcEwUM0ibiRW",
-    "ses_2ebcd7b60ffeO33HNI4lqNuQHS",
-    "ses_2ebc745dbffe9h2XPVzouOf5Sb",
-    "ses_2ebc38aecffe5RuR3OFU7RjTC6",
-    "ses_2ebbe7452ffeFFgc1oVrB5LfoU",
-    "ses_2ebb99a6fffeN9R9PKy2qTKXvQ",
-    "ses_2ebb36d9dffeWv1lF42gQKYA3k",
-    "ses_2ebafbf01ffe1NUMROCuoV6JOT",
-    "ses_2eb67ae11ffedFK0B92lUCaPec",
-    "ses_2eb6302a3ffeHcSPRZ7JdLKVko",
-    "ses_2eb5ceb55ffeBPLzegG9Gb5Evd",
-    "ses_2eb55cec4ffepdikhaOpS3Svwb",
-    "ses_2eb51d0eeffe2K0OLgQLNf0nKo",
-    "ses_2eb4dda97ffev2q7kwWyeCesC4",
-    "ses_2eb1bd714ffemZSNLcHUWP90Sa",
-    "ses_2eb13ac90ffeAaOQOq31W9PMVS"
+    "ses_2cb54146effeRe0TuQVvgEFCv6",
+    "ses_2c5dca48effed8mS7rTrYICuiB",
+    "ses_2c5dc6152ffeA1UnJuwVwgnxPQ",
+    "ses_2c5dc3e54ffeEu6PfGcsNXfLVr",
+    "ses_2c5d9fa3affeMS0bg1kZ4YLWoT",
+    "ses_2c5d83a4dffeB4I11TgVqvWrhC",
+    "ses_2c5d2388fffeEODRNWkDlcZjb2",
+    "ses_2c5c377a7ffeJwuld4sPP5CMeK",
+    "ses_2c5c28e4effe5VXF9S3DQOPzHo",
+    "ses_2c5c1d4c8ffeCVnU81kqrgV5nE"
   ],
-  "plan_name": "production-enhancement",
+  "plan_name": "rerank-support",
   "agent": "atlas"
 }

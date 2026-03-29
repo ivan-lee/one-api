@@ -334,6 +334,15 @@ var ModelRatio = map[string]float64{
 	"command-light-nightly": 0.5,
 	"command-r":             0.5 / 1000 * USD,
 	"command-r-plus":        3.0 / 1000 * USD,
+	// Cohere Rerank
+	// https://cohere.com/pricing
+	"rerank-english-v3.0":      1.0 / 1000 * USD,
+	"rerank-multilingual-v3.0": 1.0 / 1000 * USD,
+	"rerank-english-v2.0":      1.0 / 1000 * USD,
+	// Jina AI Rerank
+	// https://jina.ai/reranker
+	"jina-reranker-v2-base-multilingual": 1.0 / 1000 * USD,
+	"jina-reranker-v1-turbo-en":          0.5 / 1000 * USD,
 	// https://platform.deepseek.com/api-docs/pricing/
 	"deepseek-chat":     0.14 * MILLI_USD,
 	"deepseek-reasoner": 0.55 * MILLI_USD,

@@ -23,7 +23,9 @@ func (*Adaptor) ConvertImageRequest(request *model.ImageRequest) (any, error) {
 	return nil, errors.New("not implemented")
 }
 
-// ConvertImageRequest implements adaptor.Adaptor.
+func (*Adaptor) ConvertRerankRequest(request *model.RerankRequest) (any, error) {
+	return nil, errors.New("not implemented")
+}
 
 func (a *Adaptor) Init(meta *meta.Meta) {
 	a.meta = meta
