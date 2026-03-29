@@ -128,7 +128,10 @@ func SetApiRouter(router *gin.Engine) {
 			statsRoute.GET("/overview", middleware.AdminAuth(), controller.GetGlobalStats)
 			statsRoute.GET("/tokens", middleware.AdminAuth(), controller.GetTokenStats)
 			statsRoute.GET("/models", middleware.AdminAuth(), controller.GetModelStats)
+			statsRoute.GET("/channels", middleware.AdminAuth(), controller.GetChannelStats)
 			statsRoute.GET("/users", middleware.AdminAuth(), controller.GetUserStats)
+			statsRoute.GET("/user-groups", middleware.AdminAuth(), controller.GetUserGroupStats)
+			statsRoute.GET("/channel-groups", middleware.AdminAuth(), controller.GetChannelGroupStats)
 			statsRoute.GET("/ranking", middleware.AdminAuth(), controller.GetStatsRanking)
 			// User endpoint for own statistics
 			statsRoute.GET("/self", middleware.UserAuth(), controller.GetUserSelfStats)

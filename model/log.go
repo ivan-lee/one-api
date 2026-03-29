@@ -316,6 +316,16 @@ type LogStatistic struct {
 	CompletionTokens int    `gorm:"column:completion_tokens"`
 }
 
+// LogStatisticByGranularity represents log statistics grouped by time granularity
+type LogStatisticByGranularity struct {
+	TimeSlot         string `gorm:"column:time_slot" json:"time_slot"`
+	ModelName        string `gorm:"column:model_name" json:"model_name"`
+	RequestCount     int    `gorm:"column:request_count" json:"request_count"`
+	Quota            int    `gorm:"column:quota" json:"quota"`
+	PromptTokens     int    `gorm:"column:prompt_tokens" json:"prompt_tokens"`
+	CompletionTokens int    `gorm:"column:completion_tokens" json:"completion_tokens"`
+}
+
 func SearchLogsByDayAndModel(userId, start, end int) (LogStatistics []*LogStatistic, err error) {
 	groupSelect := "DATE_FORMAT(FROM_UNIXTIME(created_at), '%Y-%m-%d') as day"
 
@@ -344,12 +354,32 @@ func SearchLogsByDayAndModel(userId, start, end int) (LogStatistics []*LogStatis
 	return LogStatistics, err
 }
 
+func SearchLogsByGranularityAndModel(userId int, start, end int, granularity string) (LogStatistics []*LogStatisticByGranularity, err error) {
+	groupSelect, groupAlias := GetDateGroupByColumn(granularity)
+
+	err = LOG_DB.Raw(`
+		SELECT `+groupSelect+`,
+		model_name, count(1) as request_count,
+		sum(quota) as quota,
+		sum(prompt_tokens) as prompt_tokens,
+		sum(completion_tokens) as completion_tokens
+		FROM logs
+		WHERE type=2
+		AND user_id= ?
+		AND created_at BETWEEN ? AND ?
+		GROUP BY `+groupAlias+`, model_name
+		ORDER BY `+groupAlias+`, model_name
+	`, userId, start, end).Scan(&LogStatistics).Error
+
+	return LogStatistics, err
+}
+
 // TokenUsageStats represents overall token usage statistics
 type TokenUsageStats struct {
-	TotalRequests     int   `json:"total_requests" gorm:"column:total_requests"`
-	TotalQuota        int   `json:"total_quota" gorm:"column:total_quota"`
-	TotalPromptTokens int   `json:"total_prompt_tokens" gorm:"column:total_prompt_tokens"`
-	TotalCompletion   int   `json:"total_completion_tokens" gorm:"column:total_completion_tokens"`
+	TotalRequests     int `json:"total_requests" gorm:"column:total_requests"`
+	TotalQuota        int `json:"total_quota" gorm:"column:total_quota"`
+	TotalPromptTokens int `json:"total_prompt_tokens" gorm:"column:total_prompt_tokens"`
+	TotalCompletion   int `json:"total_completion_tokens" gorm:"column:total_completion_tokens"`
 }
 
 // TokenDailyStats represents daily token usage statistics
@@ -506,4 +536,55 @@ func GetTokenModelStats(tokenName string, startTimestamp, endTimestamp int64) ([
 
 	err := query.Scan(&stats).Error
 	return stats, err
+}
+
+func GetDateGroupByColumn(granularity string) (groupSelect string, groupAlias string) {
+	switch granularity {
+	case "hour":
+		groupSelect = "DATE_FORMAT(FROM_UNIXTIME(created_at), '%Y-%m-%d %H:00') as time_slot"
+		groupAlias = "time_slot"
+		if common.UsingPostgreSQL {
+			groupSelect = "TO_CHAR(date_trunc('hour', to_timestamp(created_at)), 'YYYY-MM-DD HH24:00') as time_slot"
+		}
+		if common.UsingSQLite {
+			groupSelect = "strftime('%Y-%m-%d %H:00', datetime(created_at, 'unixepoch')) as time_slot"
+		}
+	case "day":
+		groupSelect = "DATE_FORMAT(FROM_UNIXTIME(created_at), '%Y-%m-%d') as time_slot"
+		groupAlias = "time_slot"
+		if common.UsingPostgreSQL {
+			groupSelect = "TO_CHAR(date_trunc('day', to_timestamp(created_at)), 'YYYY-MM-DD') as time_slot"
+		}
+		if common.UsingSQLite {
+			groupSelect = "strftime('%Y-%m-%d', datetime(created_at, 'unixepoch')) as time_slot"
+		}
+	case "week":
+		groupSelect = "DATE_FORMAT(FROM_UNIXTIME(created_at), '%Y-W%u') as time_slot"
+		groupAlias = "time_slot"
+		if common.UsingPostgreSQL {
+			groupSelect = "TO_CHAR(date_trunc('week', to_timestamp(created_at)), 'IYYY-IW') as time_slot"
+		}
+		if common.UsingSQLite {
+			groupSelect = "strftime('%Y-W%W', datetime(created_at, 'unixepoch')) as time_slot"
+		}
+	case "month":
+		groupSelect = "DATE_FORMAT(FROM_UNIXTIME(created_at), '%Y-%m') as time_slot"
+		groupAlias = "time_slot"
+		if common.UsingPostgreSQL {
+			groupSelect = "TO_CHAR(date_trunc('month', to_timestamp(created_at)), 'YYYY-MM') as time_slot"
+		}
+		if common.UsingSQLite {
+			groupSelect = "strftime('%Y-%m', datetime(created_at, 'unixepoch')) as time_slot"
+		}
+	default:
+		groupSelect = "DATE_FORMAT(FROM_UNIXTIME(created_at), '%Y-%m-%d') as time_slot"
+		groupAlias = "time_slot"
+		if common.UsingPostgreSQL {
+			groupSelect = "TO_CHAR(date_trunc('day', to_timestamp(created_at)), 'YYYY-MM-DD') as time_slot"
+		}
+		if common.UsingSQLite {
+			groupSelect = "strftime('%Y-%m-%d', datetime(created_at, 'unixepoch')) as time_slot"
+		}
+	}
+	return
 }

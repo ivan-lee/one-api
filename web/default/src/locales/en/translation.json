@@ -533,6 +533,57 @@
     }
   },
   "dashboard": {
+    "date_picker": {
+      "title": "Time Range",
+      "presets": {
+        "7d": "Last 7 Days",
+        "14d": "Last 14 Days",
+        "30d": "Last 30 Days",
+        "90d": "Last 90 Days",
+        "this_month": "This Month",
+        "last_month": "Last Month",
+        "custom": "Custom"
+      }
+    },
+    "filters": {
+      "title": "Data Filter",
+      "all_channels": "All Channels",
+      "all_used_channels": "All Used Channels",
+      "no_used_channels": "No Used Channels",
+      "all_user_groups": "All User Groups",
+      "all_channel_groups": "All Channel Groups",
+      "all_models": "All Models",
+      "channel": "Channel",
+      "user_group": "User Group",
+      "channel_group": "Channel Group",
+      "model": "Model",
+      "all": "All",
+      "select_channel": "Select Channel",
+      "select_user_group": "Select User Group",
+      "select_channel_group": "Select Channel Group",
+      "select_model": "Select Model",
+      "deleted_channel": "Deleted Channel",
+      "unknown_group": "Unknown Group",
+      "unknown_model": "Unknown Model",
+      "no_results": "No results found",
+      "loading": "Loading options...",
+      "error": {
+        "title": "Load Failed",
+        "load_failed": "Unable to load filter options"
+      }
+    },
+    "granularity": {
+      "title": "Time Granularity",
+      "hour": "Hour",
+      "day": "Day",
+      "week": "Week",
+      "month": "Month"
+    },
+    "export": {
+      "button": "Export",
+      "export_success": "Export Successful",
+      "export_failed": "Export Failed"
+    },
     "charts": {
       "requests": {
         "title": "Model Request Trend",
@@ -545,6 +596,29 @@
       "tokens": {
         "title": "Token Usage Trend",
         "tooltip": "Token Count"
+      },
+      "grouped_bar": {
+        "title": "Dimension Comparison"
+      },
+      "heatmap": {
+        "title": "Usage Heatmap",
+        "hour": "Hour",
+        "weekday": "Weekday"
+      },
+      "radar": {
+        "title": "Multi-dimension Comparison"
+      },
+      "stacked_grouped": {
+        "title": "Cross-dimension Analysis"
+      },
+      "weekday": {
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat",
+        "sun": "Sun"
       }
     },
     "statistics": {

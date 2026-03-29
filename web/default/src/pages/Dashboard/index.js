@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {Card, Grid} from 'semantic-ui-react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Card, Grid, Loader, Message } from 'semantic-ui-react';
 import {
   Bar,
   BarChart,
@@ -14,9 +14,15 @@ import {
   YAxis,
 } from 'recharts';
 import axios from 'axios';
+import DatePickerWithPresets from '../../components/DatePickerWithPresets';
+import DimensionFilter from '../../components/DimensionFilter';
+import GranularitySelector from '../../components/GranularitySelector';
+import GroupedBarChart from '../../components/charts/GroupedBarChart';
+import HeatmapChart from '../../components/charts/HeatmapChart';
+import RadarChart from '../../components/charts/RadarChart';
+import StackedGroupedBarChart from '../../components/charts/StackedGroupedBarChart';
 import './Dashboard.css';
 
-// 在 Dashboard 组件内添加自定义配置
 const chartConfig = {
   lineChart: {
     style: {
@@ -40,46 +46,135 @@ const chartConfig = {
     tokens: '#6C63FF',
   },
   barColors: [
-    '#4318FF', // 深紫色
-    '#00B5D8', // 青色
-    '#6C63FF', // 紫色
-    '#05CD99', // 绿色
-    '#FFB547', // 橙色
-    '#FF5E7D', // 粉色
-    '#41B883', // 翠绿
-    '#7983FF', // 淡紫
-    '#FF8F6B', // 珊瑚色
-    '#49BEFF', // 天蓝
+    '#4318FF',
+    '#00B5D8',
+    '#6C63FF',
+    '#05CD99',
+    '#FFB547',
+    '#FF5E7D',
+    '#41B883',
+    '#7983FF',
+    '#FF8F6B',
+    '#49BEFF',
   ],
 };
 
 const Dashboard = () => {
   const { t } = useTranslation();
+  
+  const [timeRange, setTimeRange] = useState({
+    startTimestamp: Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60,
+    endTimestamp: Math.floor(Date.now() / 1000),
+    preset: '7d',
+  });
+  
+  const [filters, setFilters] = useState({
+    channel: 'all',
+    model: 'all',
+  });
+  
+  const [granularity, setGranularity] = useState('day');
+  
   const [data, setData] = useState([]);
+  const [heatmapData, setHeatmapData] = useState([]);
+  const [channelData, setChannelData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [heatmapLoading, setHeatmapLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
   const [summaryData, setSummaryData] = useState({
     todayRequests: 0,
     todayQuota: 0,
     todayTokens: 0,
   });
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
     try {
-      const response = await axios.get('/api/user/dashboard');
+      const params = {
+        start_timestamp: timeRange.startTimestamp,
+        end_timestamp: timeRange.endTimestamp,
+        granularity,
+      };
+      
+      if (filters.channel !== 'all') {
+        params.channel_id = filters.channel;
+      }
+      if (filters.model !== 'all') {
+        params.model_name = filters.model;
+      }
+      
+      const response = await axios.get('/api/user/dashboard', { params });
+      
       if (response.data.success) {
         const dashboardData = response.data.data || [];
         setData(dashboardData);
         calculateSummary(dashboardData);
+      } else {
+        setError(response.data.message || t('dashboard.stats.error.load_failed'));
       }
-    } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
+    } catch (err) {
+      console.error('Failed to fetch dashboard data:', err);
+      setError(t('dashboard.stats.error.load_failed'));
       setData([]);
       calculateSummary([]);
     }
-  };
+    
+    setLoading(false);
+  }, [timeRange, filters, granularity, t]);
+
+  const fetchHeatmapData = useCallback(async () => {
+    setHeatmapLoading(true);
+    
+    try {
+      const params = {
+        start_timestamp: timeRange.startTimestamp,
+        end_timestamp: timeRange.endTimestamp,
+      };
+      
+      if (filters.channel !== 'all') {
+        params.channel_id = filters.channel;
+      }
+      
+      const response = await axios.get('/api/stats/heatmap', { params });
+      
+      if (response.data.success) {
+        setHeatmapData(response.data.data || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch heatmap data:', err);
+      setHeatmapData([]);
+    }
+    
+    setHeatmapLoading(false);
+  }, [timeRange, filters]);
+
+  const fetchChannelData = useCallback(async () => {
+    try {
+      const params = {
+        start_timestamp: timeRange.startTimestamp,
+        end_timestamp: timeRange.endTimestamp,
+      };
+      
+      const response = await axios.get('/api/stats/channels', { params });
+      
+      if (response.data.success) {
+        const channels = response.data.data || [];
+        const chartData = channels.slice(0, 10).map(channel => ({
+          name: channel.channel_name || `Channel #${channel.channel_id}`,
+          requests: channel.request_count || 0,
+          quota: (channel.quota || 0) / 1000000,
+          tokens: channel.total_tokens || 0,
+        }));
+        setChannelData(chartData);
+      }
+    } catch (err) {
+      console.error('Failed to fetch channel data:', err);
+      setChannelData([]);
+    }
+  }, [timeRange]);
 
   const calculateSummary = (dashboardData) => {
     if (!Array.isArray(dashboardData) || dashboardData.length === 0) {
@@ -92,17 +187,26 @@ const Dashboard = () => {
     }
 
     const today = new Date().toISOString().split('T')[0];
-    const todayData = dashboardData.filter((item) => item.Day === today);
+    const todayData = dashboardData.filter((item) => {
+      const slot = item.time_slot;
+      if (granularity === 'day') {
+        return slot === today;
+      }
+      if (granularity === 'hour') {
+        return slot.startsWith(today);
+      }
+      return false;
+    });
 
     const summary = {
       todayRequests: todayData.reduce(
-        (sum, item) => sum + item.RequestCount,
+        (sum, item) => sum + (item.request_count || 0),
         0
       ),
       todayQuota:
-        todayData.reduce((sum, item) => sum + item.Quota, 0) / 1000000,
+        todayData.reduce((sum, item) => sum + (item.quota || 0), 0) / 1000000,
       todayTokens: todayData.reduce(
-        (sum, item) => sum + item.PromptTokens + item.CompletionTokens,
+        (sum, item) => sum + (item.prompt_tokens || 0) + (item.completion_tokens || 0),
         0
       ),
     };
@@ -110,145 +214,411 @@ const Dashboard = () => {
     setSummaryData(summary);
   };
 
-  // 处理数据以供折线图使用，补充缺失的日期
-  const processTimeSeriesData = () => {
-    const dailyData = {};
+  const handleTimeRangeChange = (newTimeRange) => {
+    setTimeRange(newTimeRange);
+  };
 
-    // 获取日期范围
-    const dates = data.map((item) => item.Day);
-    const maxDate = new Date(); // 总是使用今天作为最后一天
-    let minDate =
-      dates.length > 0
-        ? new Date(Math.min(...dates.map((d) => new Date(d))))
-        : new Date();
+  const handleFilterChange = (activeFilters, allFilters) => {
+    setFilters({
+      channel: allFilters.channel || 'all',
+      model: allFilters.model || 'all',
+    });
+  };
 
-    // 确保至少显示7天的数据
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6); // -6是因为包含今天
-    if (minDate > sevenDaysAgo) {
-      minDate = sevenDaysAgo;
-    }
+  const handleGranularityChange = (newGranularity) => {
+    setGranularity(newGranularity);
+  };
 
-    // 生成所有日期
-    for (let d = new Date(minDate); d <= maxDate; d.setDate(d.getDate() + 1)) {
-      const dateStr = d.toISOString().split('T')[0];
-      dailyData[dateStr] = {
-        date: dateStr,
+  const buildTimeSeriesData = () => {
+    const timeData = {};
+
+    // Generate time slots based on selected time range, not just data
+    const generateTimeSlotsFromRange = () => {
+      const slots = [];
+      const startMs = timeRange.startTimestamp * 1000;
+      const endMs = timeRange.endTimestamp * 1000;
+      
+      switch (granularity) {
+        case 'hour': {
+          // Start from the beginning of the start hour
+          const startDate = new Date(startMs);
+          startDate.setMinutes(0, 0, 0);
+          const endDate = new Date(endMs);
+          endDate.setMinutes(0, 0, 0);
+          for (let h = new Date(startDate); h <= endDate; h.setHours(h.getHours() + 1)) {
+            slots.push(h.toISOString().slice(0, 13).replace('T', ' ') + ':00');
+          }
+          break;
+        }
+        case 'day': {
+          // Start from the beginning of the start day
+          const startDate = new Date(startMs);
+          startDate.setHours(0, 0, 0, 0);
+          const endDate = new Date(endMs);
+          endDate.setHours(0, 0, 0, 0);
+          for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            slots.push(d.toISOString().split('T')[0]);
+          }
+          break;
+        }
+        case 'week': {
+          // For week, generate week-start dates
+          const startDate = new Date(startMs);
+          startDate.setHours(0, 0, 0, 0);
+          const endDate = new Date(endMs);
+          endDate.setHours(0, 0, 0, 0);
+          for (let w = new Date(startDate); w <= endDate; w.setDate(w.getDate() + 7)) {
+            slots.push(w.toISOString().split('T')[0]);
+          }
+          break;
+        }
+        case 'month': {
+          // For month, generate first day of each month
+          const startDate = new Date(startMs);
+          const startMonth = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+          const endDate = new Date(endMs);
+          const endMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+          for (let m = new Date(startMonth); m <= endMonth; m.setMonth(m.getMonth() + 1)) {
+            slots.push(m.toISOString().split('T')[0]);
+          }
+          break;
+        }
+        default: {
+          const startDate = new Date(startMs);
+          startDate.setHours(0, 0, 0, 0);
+          const endDate = new Date(endMs);
+          endDate.setHours(0, 0, 0, 0);
+          for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            slots.push(d.toISOString().split('T')[0]);
+          }
+        }
+      }
+      return slots;
+    };
+
+    const slots = generateTimeSlotsFromRange();
+
+    // Initialize all slots with zero values
+    slots.forEach((slot) => {
+      timeData[slot] = {
+        time_slot: slot,
         requests: 0,
         quota: 0,
         tokens: 0,
       };
-    }
-
-    // 填充实际数据
-    data.forEach((item) => {
-      dailyData[item.Day].requests += item.RequestCount;
-      dailyData[item.Day].quota += item.Quota / 1000000;
-      dailyData[item.Day].tokens += item.PromptTokens + item.CompletionTokens;
     });
 
-    return Object.values(dailyData).sort((a, b) =>
-      a.date.localeCompare(b.date)
+    // Fill with actual data
+    data.forEach((item) => {
+      const slot = item.time_slot;
+      if (timeData[slot]) {
+        timeData[slot].requests += item.request_count || 0;
+        timeData[slot].quota += (item.quota || 0) / 1000000;
+        timeData[slot].tokens += (item.prompt_tokens || 0) + (item.completion_tokens || 0);
+      }
+    });
+
+    return Object.values(timeData).sort((a, b) =>
+      a.time_slot.localeCompare(b.time_slot)
     );
   };
 
-  // 处理数据以供堆叠柱状图使用
-  const processModelData = () => {
+  const buildModelStackedData = () => {
     const timeData = {};
 
-    // 获取日期范围
-    const dates = data.map((item) => item.Day);
-    const maxDate = new Date(); // 总是使用今天作为最后一天
-    let minDate =
-      dates.length > 0
-        ? new Date(Math.min(...dates.map((d) => new Date(d))))
-        : new Date();
+    // Generate time slots based on selected time range
+    const generateTimeSlotsFromRange = () => {
+      const slots = [];
+      const startMs = timeRange.startTimestamp * 1000;
+      const endMs = timeRange.endTimestamp * 1000;
+      
+      switch (granularity) {
+        case 'hour': {
+          const startDate = new Date(startMs);
+          startDate.setMinutes(0, 0, 0);
+          const endDate = new Date(endMs);
+          endDate.setMinutes(0, 0, 0);
+          for (let h = new Date(startDate); h <= endDate; h.setHours(h.getHours() + 1)) {
+            slots.push(h.toISOString().slice(0, 13).replace('T', ' ') + ':00');
+          }
+          break;
+        }
+        case 'day': {
+          const startDate = new Date(startMs);
+          startDate.setHours(0, 0, 0, 0);
+          const endDate = new Date(endMs);
+          endDate.setHours(0, 0, 0, 0);
+          for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            slots.push(d.toISOString().split('T')[0]);
+          }
+          break;
+        }
+        case 'week': {
+          const startDate = new Date(startMs);
+          startDate.setHours(0, 0, 0, 0);
+          const endDate = new Date(endMs);
+          endDate.setHours(0, 0, 0, 0);
+          for (let w = new Date(startDate); w <= endDate; w.setDate(w.getDate() + 7)) {
+            slots.push(w.toISOString().split('T')[0]);
+          }
+          break;
+        }
+        case 'month': {
+          const startDate = new Date(startMs);
+          const startMonth = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+          const endDate = new Date(endMs);
+          const endMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+          for (let m = new Date(startMonth); m <= endMonth; m.setMonth(m.getMonth() + 1)) {
+            slots.push(m.toISOString().split('T')[0]);
+          }
+          break;
+        }
+        default: {
+          const startDate = new Date(startMs);
+          startDate.setHours(0, 0, 0, 0);
+          const endDate = new Date(endMs);
+          endDate.setHours(0, 0, 0, 0);
+          for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            slots.push(d.toISOString().split('T')[0]);
+          }
+        }
+      }
+      return slots;
+    };
 
-    // 确保至少显示7天的数据
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6); // -6是因为包含今天
-    if (minDate > sevenDaysAgo) {
-      minDate = sevenDaysAgo;
-    }
+    const slots = generateTimeSlotsFromRange();
 
-    // 生成所有日期
-    for (let d = new Date(minDate); d <= maxDate; d.setDate(d.getDate() + 1)) {
-      const dateStr = d.toISOString().split('T')[0];
-      timeData[dateStr] = {
-        date: dateStr,
+    const models = [...new Set(data.map((item) => item.model_name))];
+
+    slots.forEach((slot) => {
+      timeData[slot] = {
+        time_slot: slot,
       };
-
-      // 初始化所有模型的数据为0
-      const models = [...new Set(data.map((item) => item.ModelName))];
       models.forEach((model) => {
-        timeData[dateStr][model] = 0;
+        timeData[slot][model] = 0;
       });
-    }
-
-    // 填充实际数据
-    data.forEach((item) => {
-      timeData[item.Day][item.ModelName] =
-        item.PromptTokens + item.CompletionTokens;
     });
 
-    return Object.values(timeData).sort((a, b) => a.date.localeCompare(b.date));
+    data.forEach((item) => {
+      const slot = item.time_slot;
+      if (timeData[slot]) {
+        timeData[slot][item.model_name] =
+          (item.prompt_tokens || 0) + (item.completion_tokens || 0);
+      }
+    });
+
+    return Object.values(timeData).sort((a, b) => a.time_slot.localeCompare(b.time_slot));
   };
 
-  // 获取所有唯一的模型名称
   const getUniqueModels = () => {
-    return [...new Set(data.map((item) => item.ModelName))];
+    return [...new Set(data.map((item) => item.model_name))];
   };
 
-  const timeSeriesData = processTimeSeriesData();
-  const modelData = processModelData();
-  const models = getUniqueModels();
+  const buildRadarChartData = () => {
+    const modelMetrics = {};
+    
+    data.forEach(item => {
+      const modelName = item.model_name || 'Unknown';
+      if (!modelMetrics[modelName]) {
+        modelMetrics[modelName] = {
+          requests: 0,
+          quota: 0,
+          tokens: 0,
+          prompt_tokens: 0,
+          completion_tokens: 0,
+        };
+      }
+      modelMetrics[modelName].requests += item.request_count || 0;
+      modelMetrics[modelName].quota += item.quota || 0;
+      modelMetrics[modelName].tokens += (item.prompt_tokens || 0) + (item.completion_tokens || 0);
+      modelMetrics[modelName].prompt_tokens += item.prompt_tokens || 0;
+      modelMetrics[modelName].completion_tokens += item.completion_tokens || 0;
+    });
 
-  // 生成随机颜色
-  const getRandomColor = (index) => {
+    const topModels = Object.entries(modelMetrics)
+      .sort((a, b) => b[1].requests - a[1].requests)
+      .slice(0, 5)
+      .map(([name]) => name);
+
+    const dimensions = ['requests', 'quota', 'tokens', 'prompt_tokens', 'completion_tokens'];
+    
+    const maxValues = {};
+    dimensions.forEach(dim => {
+      maxValues[dim] = Math.max(...topModels.map(m => modelMetrics[m][dim] || 0), 1);
+    });
+
+    return dimensions.map(dim => {
+      const result = { dimension: t(`dashboard.charts.radar.${dim}`, dim) };
+      topModels.forEach(model => {
+        const value = modelMetrics[model][dim] || 0;
+        result[model] = Math.round((value / maxValues[dim]) * 100);
+      });
+      return result;
+    });
+  };
+
+  const buildStackedGroupedChartData = () => {
+    const channelModelData = {};
+    
+    data.forEach(item => {
+      const channelName = item.ChannelName || `Channel #${item.ChannelId || 0}`;
+      const modelName = item.model_name || 'Unknown';
+      
+      if (!channelModelData[channelName]) {
+        channelModelData[channelName] = { channel: channelName };
+      }
+      
+      channelModelData[channelName][modelName] = 
+        (channelModelData[channelName][modelName] || 0) + 
+        (item.prompt_tokens || 0) + (item.completion_tokens || 0);
+    });
+
+    const topChannels = Object.keys(channelModelData).slice(0, 6);
+    const allModels = [...new Set(data.map(item => item.model_name))].slice(0, 5);
+
+    return topChannels.map(channel => {
+      const result = { channel };
+      allModels.forEach(model => {
+        result[model] = channelModelData[channel][model] || 0;
+      });
+      return result;
+    });
+  };
+
+  const getColorByIndex = (index) => {
     return chartConfig.barColors[index % chartConfig.barColors.length];
   };
 
-  // 添加一个日期格式化函数
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('zh-CN', {
-      month: 'numeric',
-      day: 'numeric',
-    });
+  const formatTimeByGranularity = (timeSlot) => {
+    if (!timeSlot) return '';
+    
+    switch (granularity) {
+      case 'hour':
+        const hourDate = new Date(timeSlot.replace(' ', 'T'));
+        return hourDate.toLocaleTimeString('zh-CN', {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+      case 'day':
+        const dayDate = new Date(timeSlot);
+        return dayDate.toLocaleDateString('zh-CN', {
+          month: 'numeric',
+          day: 'numeric',
+        });
+      case 'week':
+        return timeSlot;
+      case 'month':
+        return timeSlot;
+      default:
+        const defaultDate = new Date(timeSlot);
+        return defaultDate.toLocaleDateString('zh-CN', {
+          month: 'numeric',
+          day: 'numeric',
+        });
+    }
   };
 
-  // 修改所有 XAxis 配置
+  useEffect(() => {
+    fetchDashboardData();
+    fetchHeatmapData();
+    fetchChannelData();
+  }, [fetchDashboardData, fetchHeatmapData, fetchChannelData]);
+
+  const timeSeriesData = buildTimeSeriesData();
+  const modelData = buildModelStackedData();
+  const models = getUniqueModels();
+  const radarData = buildRadarChartData();
+  const stackedGroupedData = buildStackedGroupedChartData();
+
+  // Calculate optimal interval based on data length to prevent label overlap
+  const calculateXAxisInterval = (dataLength) => {
+    if (!dataLength || dataLength <= 7) return 0; // Show all for short ranges
+    if (dataLength <= 14) return 1; // Show every 2nd label
+    if (dataLength <= 30) return Math.ceil(dataLength / 8); // ~8 labels max
+    if (dataLength <= 90) return Math.ceil(dataLength / 10); // ~10 labels max
+    return Math.ceil(dataLength / 12); // ~12 labels max for longer ranges
+  };
+
+  const xAxisInterval = calculateXAxisInterval(timeSeriesData?.length || 0);
+
   const xAxisConfig = {
-    dataKey: 'date',
+    dataKey: 'time_slot',
     axisLine: false,
     tickLine: false,
     tick: {
       fontSize: 12,
       fill: '#A3AED0',
-      textAnchor: 'middle', // 文本居中对齐
+      textAnchor: 'middle',
     },
-    tickFormatter: formatDate,
-    interval: 0,
-    minTickGap: 5,
-    padding: { left: 30, right: 30 }, // 增加两侧的内边距，确保首尾标签完整显示
+    tickFormatter: formatTimeByGranularity,
+    interval: xAxisInterval,
+    minTickGap: 35, // Increased gap to prevent overlap
+    padding: { left: 30, right: 30 },
   };
+
+  if (loading && data.length === 0) {
+    return (
+      <div className='dashboard-container'>
+        <Loader active size='large' className='dashboard-loader'>
+          {t('dashboard.stats.loading')}
+        </Loader>
+      </div>
+    );
+  }
+
+  if (error && data.length === 0) {
+    return (
+      <div className='dashboard-container'>
+        <Message negative>
+          <Message.Header>{t('dashboard.stats.error.title')}</Message.Header>
+          <p>{error}</p>
+        </Message>
+      </div>
+    );
+  }
 
   return (
     <div className='dashboard-container'>
-      {/* 三个并排的折线图 */}
+      <div className='dashboard-controls'>
+        <div className='controls-row'>
+          <div className='control-section date-picker-section'>
+            <label className='control-label'>{t('dashboard.date_picker.title')}</label>
+            <DatePickerWithPresets
+              onChange={handleTimeRangeChange}
+              defaultPreset='7d'
+            />
+          </div>
+          <div className='control-section granularity-section'>
+            <label className='control-label'>{t('dashboard.granularity.title')}</label>
+            <GranularitySelector
+              value={granularity}
+              onChange={handleGranularityChange}
+            />
+          </div>
+          <div className='control-section filter-section'>
+            <label className='control-label'>{t('dashboard.filters.title')}</label>
+            <DimensionFilter
+              dimensions={['channel', 'model']}
+              onChange={handleFilterChange}
+              value={filters}
+              timeRange={timeRange}
+            />
+          </div>
+        </div>
+      </div>
+
       <Grid columns={3} stackable className='charts-grid'>
         <Grid.Column>
           <Card fluid className='chart-card'>
             <Card.Content>
               <Card.Header>
                 {t('dashboard.charts.requests.title')}
-                {/* <span className='stat-value'>{summaryData.todayRequests}</span> */}
               </Card.Header>
               <div className='chart-container'>
                 <ResponsiveContainer
                   width='100%'
                   height={120}
-                  margin={{ left: 10, right: 10 }} // 调整容器边距
+                  margin={{ left: 10, right: 10 }}
                 >
                   <LineChart data={timeSeriesData}>
                     <CartesianGrid
@@ -271,9 +641,7 @@ const Dashboard = () => {
                         t('dashboard.charts.requests.tooltip'),
                       ]}
                       labelFormatter={(label) =>
-                        `${t(
-                          'dashboard.statistics.tooltip.date'
-                        )}: ${formatDate(label)}`
+                        `${t('dashboard.statistics.tooltip.date')}: ${formatTimeByGranularity(label)}`
                       }
                     />
                     <Line
@@ -296,15 +664,12 @@ const Dashboard = () => {
             <Card.Content>
               <Card.Header>
                 {t('dashboard.charts.quota.title')}
-                {/* <span className='stat-value'>
-                  ${summaryData.todayQuota.toFixed(3)}
-                </span> */}
               </Card.Header>
               <div className='chart-container'>
                 <ResponsiveContainer
                   width='100%'
                   height={120}
-                  margin={{ left: 10, right: 10 }} // 调整容器边距
+                  margin={{ left: 10, right: 10 }}
                 >
                   <LineChart data={timeSeriesData}>
                     <CartesianGrid
@@ -327,9 +692,7 @@ const Dashboard = () => {
                         t('dashboard.charts.quota.tooltip'),
                       ]}
                       labelFormatter={(label) =>
-                        `${t(
-                          'dashboard.statistics.tooltip.date'
-                        )}: ${formatDate(label)}`
+                        `${t('dashboard.statistics.tooltip.date')}: ${formatTimeByGranularity(label)}`
                       }
                     />
                     <Line
@@ -352,13 +715,12 @@ const Dashboard = () => {
             <Card.Content>
               <Card.Header>
                 {t('dashboard.charts.tokens.title')}
-                {/* <span className='stat-value'>{summaryData.todayTokens}</span> */}
               </Card.Header>
               <div className='chart-container'>
                 <ResponsiveContainer
                   width='100%'
                   height={120}
-                  margin={{ left: 10, right: 10 }} // 调整容器边距
+                  margin={{ left: 10, right: 10 }}
                 >
                   <LineChart data={timeSeriesData}>
                     <CartesianGrid
@@ -381,9 +743,7 @@ const Dashboard = () => {
                         t('dashboard.charts.tokens.tooltip'),
                       ]}
                       labelFormatter={(label) =>
-                        `${t(
-                          'dashboard.statistics.tooltip.date'
-                        )}: ${formatDate(label)}`
+                        `${t('dashboard.statistics.tooltip.date')}: ${formatTimeByGranularity(label)}`
                       }
                     />
                     <Line
@@ -402,7 +762,6 @@ const Dashboard = () => {
         </Grid.Column>
       </Grid>
 
-      {/* 模型使用统计 */}
       <Card fluid className='chart-card'>
         <Card.Content>
           <Card.Header>{t('dashboard.statistics.title')}</Card.Header>
@@ -428,9 +787,7 @@ const Dashboard = () => {
                     boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                   }}
                   labelFormatter={(label) =>
-                    `${t('dashboard.statistics.tooltip.date')}: ${formatDate(
-                      label
-                    )}`
+                    `${t('dashboard.statistics.tooltip.date')}: ${formatTimeByGranularity(label)}`
                   }
                 />
                 <Legend
@@ -443,7 +800,7 @@ const Dashboard = () => {
                     key={model}
                     dataKey={model}
                     stackId='a'
-                    fill={getRandomColor(index)}
+                    fill={getColorByIndex(index)}
                     name={model}
                     radius={[4, 4, 0, 0]}
                   />
@@ -453,6 +810,83 @@ const Dashboard = () => {
           </div>
         </Card.Content>
       </Card>
+
+      <div className='new-charts-section'>
+        <Grid columns={2} stackable className='charts-grid'>
+          <Grid.Column>
+            <Card fluid className='chart-card'>
+              <Card.Content>
+                <Card.Header>{t('dashboard.charts.grouped_bar.title')}</Card.Header>
+                <div className='chart-container'>
+                  <GroupedBarChart
+                    data={channelData}
+                    xAxisKey='name'
+                    dataKeys={['requests', 'quota', 'tokens']}
+                    height={280}
+                    valueFormatter={(value, name) => {
+                      if (name === 'quota') return [`$${value.toFixed(6)}`, name];
+                      return [value.toLocaleString(), name];
+                    }}
+                    emptyMessage={t('dashboard.stats.no_data.title')}
+                  />
+                </div>
+              </Card.Content>
+            </Card>
+          </Grid.Column>
+
+          <Grid.Column>
+            <Card fluid className='chart-card'>
+              <Card.Content>
+                <Card.Header>{t('dashboard.charts.heatmap.title')}</Card.Header>
+                <div className='chart-container'>
+                  {heatmapLoading ? (
+                    <Loader active size='small' />
+                  ) : (
+                    <HeatmapChart
+                      data={heatmapData}
+                      metric='request_count'
+                      height={280}
+                    />
+                  )}
+                </div>
+              </Card.Content>
+            </Card>
+          </Grid.Column>
+
+          <Grid.Column>
+            <Card fluid className='chart-card'>
+              <Card.Content>
+                <Card.Header>{t('dashboard.charts.radar.title')}</Card.Header>
+                <div className='chart-container'>
+                  <RadarChart
+                    data={radarData}
+                    metrics={Object.keys(radarData[0] || {}).filter(k => k !== 'dimension')}
+                    height={280}
+                  />
+                </div>
+              </Card.Content>
+            </Card>
+          </Grid.Column>
+
+          <Grid.Column>
+            <Card fluid className='chart-card'>
+              <Card.Content>
+                <Card.Header>{t('dashboard.charts.stacked_grouped.title')}</Card.Header>
+                <div className='chart-container'>
+                  <StackedGroupedBarChart
+                    data={stackedGroupedData}
+                    groupKey='channel'
+                    stackKeys={Object.keys(stackedGroupedData[0] || {}).filter(k => k !== 'channel')}
+                    height={280}
+                    valueFormatter={(value) => value.toLocaleString()}
+                    emptyMessage={t('dashboard.stats.no_data.title')}
+                  />
+                </div>
+              </Card.Content>
+            </Card>
+          </Grid.Column>
+        </Grid>
+      </div>
     </div>
   );
 };

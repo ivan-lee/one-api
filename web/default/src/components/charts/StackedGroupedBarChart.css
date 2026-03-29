@@ -1,0 +1,101 @@
+.stacked-grouped-bar-chart-container {
+  width: 100%;
+  padding: 0;
+}
+
+.stacked-grouped-bar-chart-empty,
+.stacked-grouped-bar-chart-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: #A3AED0;
+  font-size: 14px;
+}
+
+.stacked-grouped-bar-chart-loading .loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #E9ECEF;
+  border-top-color: #4318FF;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Custom Tooltip Styles */
+.stacked-grouped-tooltip {
+  background: #fff;
+  border: none;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 10px 14px;
+  min-width: 120px;
+}
+
+.tooltip-label {
+  font-weight: 600;
+  color: #2D3748;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.tooltip-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tooltip-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.tooltip-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tooltip-name {
+  color: #A3AED0;
+  flex: 1;
+}
+
+.tooltip-value {
+  color: #2D3748;
+  font-weight: 500;
+}
+
+.tooltip-total {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid #E9ECEF;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4318FF;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .stacked-grouped-tooltip {
+    min-width: 100px;
+    padding: 8px 10px;
+  }
+  
+  .tooltip-item {
+    font-size: 11px;
+  }
+  
+  .tooltip-total {
+    font-size: 11px;
+  }
+}

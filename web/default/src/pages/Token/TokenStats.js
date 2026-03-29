@@ -4,13 +4,15 @@ import { useTranslation } from 'react-i18next';
 import {
   Button,
   Card,
-  Dropdown,
   Grid,
   Header,
   Loader,
   Message,
   Statistic,
 } from 'semantic-ui-react';
+import DatePickerWithPresets from '../../components/DatePickerWithPresets';
+import GranularitySelector from '../../components/GranularitySelector';
+import ExportButton from '../../components/ExportButton';
 import {
   Bar,
   BarChart,
@@ -72,7 +74,12 @@ const TokenStats = () => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [dateRange, setDateRange] = useState('7d');
+  const [timeRange, setTimeRange] = useState({
+    startTimestamp: 0,
+    endTimestamp: 0,
+    preset: '7d',
+  });
+  const [granularity, setGranularity] = useState('day');
   const [overallStats, setOverallStats] = useState({
     total_requests: 0,
     total_quota: 0,
@@ -82,16 +89,11 @@ const TokenStats = () => {
   const [hourlyStats, setHourlyStats] = useState([]);
   const [modelStats, setModelStats] = useState([]);
 
-  const dateRangeOptions = [
-    { key: '7d', text: t('token.stats.date_range.7d'), value: '7d' },
-    { key: '14d', text: t('token.stats.date_range.14d'), value: '14d' },
-    { key: '30d', text: t('token.stats.date_range.30d'), value: '30d' },
-    { key: '90d', text: t('token.stats.date_range.90d'), value: '90d' },
-  ];
-
   useEffect(() => {
-    fetchAllStats();
-  }, [id, dateRange]);
+    if (timeRange.startTimestamp > 0) {
+      fetchAllStats();
+    }
+  }, [id, timeRange, granularity]);
 
   const fetchAllStats = async () => {
     setLoading(true);
@@ -112,7 +114,11 @@ const TokenStats = () => {
 
   const fetchOverallStats = async () => {
     try {
-      const res = await API.get(`/api/token/${id}/stats`);
+      const params = new URLSearchParams();
+      params.append('start_timestamp', timeRange.startTimestamp);
+      params.append('end_timestamp', timeRange.endTimestamp);
+      
+      const res = await API.get(`/api/token/${id}/stats?${params.toString()}`);
       const { success, data, message } = res.data;
       if (success && data) {
         setOverallStats({
@@ -131,7 +137,12 @@ const TokenStats = () => {
 
   const fetchDailyStats = async () => {
     try {
-      const res = await API.get(`/api/token/${id}/stats/daily?range=${dateRange}`);
+      const params = new URLSearchParams();
+      params.append('start_timestamp', timeRange.startTimestamp);
+      params.append('end_timestamp', timeRange.endTimestamp);
+      params.append('granularity', granularity);
+      
+      const res = await API.get(`/api/token/${id}/stats/daily?${params.toString()}`);
       const { success, data, message } = res.data;
       if (success && data) {
         setDailyStats(data);
@@ -161,7 +172,11 @@ const TokenStats = () => {
 
   const fetchModelStats = async () => {
     try {
-      const res = await API.get(`/api/token/${id}/stats/model?range=${dateRange}`);
+      const params = new URLSearchParams();
+      params.append('start_timestamp', timeRange.startTimestamp);
+      params.append('end_timestamp', timeRange.endTimestamp);
+      
+      const res = await API.get(`/api/token/${id}/stats/model?${params.toString()}`);
       const { success, data, message } = res.data;
       if (success && data) {
         setModelStats(data);
@@ -174,8 +189,12 @@ const TokenStats = () => {
     }
   };
 
-  const handleDateRangeChange = (e, { value }) => {
-    setDateRange(value);
+  const handleTimeRangeChange = (newTimeRange) => {
+    setTimeRange(newTimeRange);
+  };
+
+  const handleGranularityChange = (newGranularity) => {
+    setGranularity(newGranularity);
   };
 
   const handleRefresh = () => {
@@ -294,12 +313,20 @@ const TokenStats = () => {
           <div className='stats-header'>
             <Header as='h2'>{t('token.stats.title')}</Header>
             <div className='stats-controls'>
-              <Dropdown
-                selection
-                options={dateRangeOptions}
-                value={dateRange}
-                onChange={handleDateRangeChange}
-                className='date-range-dropdown'
+              <DatePickerWithPresets
+                onChange={handleTimeRangeChange}
+                defaultPreset='7d'
+              />
+              <GranularitySelector
+                value={granularity}
+                onChange={handleGranularityChange}
+              />
+              <ExportButton
+                filters={{
+                  startTimestamp: timeRange.startTimestamp,
+                  endTimestamp: timeRange.endTimestamp,
+                  granularity: granularity,
+                }}
               />
               <Button primary onClick={handleRefresh} loading={loading}>
                 {t('token.stats.buttons.refresh')}

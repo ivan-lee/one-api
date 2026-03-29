@@ -533,6 +533,57 @@
     }
   },
   "dashboard": {
+    "date_picker": {
+      "title": "时间范围",
+      "presets": {
+        "7d": "最近 7 天",
+        "14d": "最近 14 天",
+        "30d": "最近 30 天",
+        "90d": "最近 90 天",
+        "this_month": "本月",
+        "last_month": "上月",
+        "custom": "自定义"
+      }
+    },
+    "filters": {
+      "title": "数据筛选",
+      "all_channels": "全部渠道",
+      "all_used_channels": "全部已使用渠道",
+      "no_used_channels": "暂无已使用渠道",
+      "all_user_groups": "全部用户分组",
+      "all_channel_groups": "全部渠道分组",
+      "all_models": "全部模型",
+      "channel": "渠道",
+      "user_group": "用户分组",
+      "channel_group": "渠道分组",
+      "model": "模型",
+      "all": "全部",
+      "select_channel": "选择渠道",
+      "select_user_group": "选择用户分组",
+      "select_channel_group": "选择渠道分组",
+      "select_model": "选择模型",
+      "deleted_channel": "已删除渠道",
+      "unknown_group": "未知分组",
+      "unknown_model": "未知模型",
+      "no_results": "未找到结果",
+      "loading": "加载选项中...",
+      "error": {
+        "title": "加载失败",
+        "load_failed": "无法加载筛选选项"
+      }
+    },
+    "granularity": {
+      "title": "时间粒度",
+      "hour": "小时",
+      "day": "天",
+      "week": "周",
+      "month": "月"
+    },
+    "export": {
+      "button": "导出",
+      "export_success": "导出成功",
+      "export_failed": "导出失败"
+    },
     "charts": {
       "requests": {
         "title": "模型请求趋势",
@@ -545,6 +596,29 @@
       "tokens": {
         "title": "Token 消费趋势",
         "tooltip": "Token 数量"
+      },
+      "grouped_bar": {
+        "title": "维度对比分析"
+      },
+      "heatmap": {
+        "title": "使用时段热力图",
+        "hour": "小时",
+        "weekday": "星期"
+      },
+      "radar": {
+        "title": "多维度指标对比"
+      },
+      "stacked_grouped": {
+        "title": "交叉维度分析"
+      },
+      "weekday": {
+        "mon": "周一",
+        "tue": "周二",
+        "wed": "周三",
+        "thu": "周四",
+        "fri": "周五",
+        "sat": "周六",
+        "sun": "周日"
       }
     },
     "statistics": {

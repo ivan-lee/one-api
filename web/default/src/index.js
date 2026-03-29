@@ -10,6 +10,7 @@ import './index.css';
 import { UserProvider } from './context/User';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import 'react-datepicker/dist/react-datepicker.css';
 import { StatusProvider } from './context/Status';
 import './i18n';
 

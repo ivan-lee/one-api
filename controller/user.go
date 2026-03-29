@@ -261,11 +261,30 @@ func GetUser(c *gin.Context) {
 
 func GetUserDashboard(c *gin.Context) {
 	id := c.GetInt(ctxkey.Id)
-	now := time.Now()
-	startOfDay := now.Truncate(24*time.Hour).AddDate(0, 0, -6).Unix()
-	endOfDay := now.Truncate(24 * time.Hour).Add(24*time.Hour - time.Second).Unix()
 
-	dashboards, err := model.SearchLogsByDayAndModel(id, int(startOfDay), int(endOfDay))
+	startStr := c.Query("start_timestamp")
+	endStr := c.Query("end_timestamp")
+	granularity := c.Query("granularity")
+
+	var startTimestamp, endTimestamp int64
+	if startStr != "" {
+		startTimestamp, _ = strconv.ParseInt(startStr, 10, 64)
+	}
+	if endStr != "" {
+		endTimestamp, _ = strconv.ParseInt(endStr, 10, 64)
+	}
+
+	if startTimestamp == 0 && endTimestamp == 0 {
+		now := time.Now()
+		startTimestamp = now.Truncate(24*time.Hour).AddDate(0, 0, -6).Unix()
+		endTimestamp = now.Truncate(24 * time.Hour).Add(24*time.Hour - time.Second).Unix()
+	}
+
+	if granularity == "" {
+		granularity = "day"
+	}
+
+	dashboards, err := model.SearchLogsByGranularityAndModel(id, int(startTimestamp), int(endTimestamp), granularity)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"success": false,

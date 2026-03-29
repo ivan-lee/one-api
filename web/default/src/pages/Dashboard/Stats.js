@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Button,
   Card,
-  Dropdown,
   Grid,
   Header,
   Loader,
@@ -25,6 +24,12 @@ import {
 } from 'recharts';
 import { API, showError } from '../../helpers';
 import { renderQuota } from '../../helpers/render';
+import { isAdmin } from '../../helpers/utils';
+import DatePickerWithPresets from '../../components/DatePickerWithPresets';
+import DimensionFilter from '../../components/DimensionFilter';
+import GranularitySelector from '../../components/GranularitySelector';
+import ExportButton from '../../components/ExportButton';
+import '../../components/DimensionFilter.css';
 import './Stats.css';
 
 const COLORS = [
@@ -54,8 +59,15 @@ const Stats = () => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [dateRange, setDateRange] = useState('7d');
+  const isAdminUser = isAdmin();
 
+  const [timeRange, setTimeRange] = useState({
+    startTimestamp: 0,
+    endTimestamp: Math.floor(Date.now() / 1000),
+    preset: '7d',
+  });
+  const [granularity, setGranularity] = useState('day');
+  const [dimensionFilters, setDimensionFilters] = useState({});
   const [overviewStats, setOverviewStats] = useState({
     total_users: 0,
     total_tokens: 0,
@@ -70,40 +82,32 @@ const Stats = () => {
   const [userRanking, setUserRanking] = useState([]);
   const [tokenRanking, setTokenRanking] = useState([]);
 
-  const dateRangeOptions = [
-    { key: '7d', text: t('dashboard.stats.date_range.7d'), value: '7d' },
-    { key: '14d', text: t('dashboard.stats.date_range.14d'), value: '14d' },
-    { key: '30d', text: t('dashboard.stats.date_range.30d'), value: '30d' },
-    { key: '90d', text: t('dashboard.stats.date_range.90d'), value: '90d' },
-  ];
-
   useEffect(() => {
     fetchAllStats();
-  }, [dateRange]);
+  }, [timeRange, granularity, dimensionFilters]);
 
-  const getDateRangeTimestamps = () => {
-    const now = Math.floor(Date.now() / 1000);
-    let startTimestamp = 0;
-
-    switch (dateRange) {
-      case '7d':
-        startTimestamp = now - 7 * 24 * 60 * 60;
-        break;
-      case '14d':
-        startTimestamp = now - 14 * 24 * 60 * 60;
-        break;
-      case '30d':
-        startTimestamp = now - 30 * 24 * 60 * 60;
-        break;
-      case '90d':
-        startTimestamp = now - 90 * 24 * 60 * 60;
-        break;
-      default:
-        startTimestamp = 0;
+  const buildApiParams = useCallback(() => {
+    const params = {
+      start_timestamp: timeRange.startTimestamp,
+      end_timestamp: timeRange.endTimestamp,
+      granularity,
+    };
+    
+    if (dimensionFilters.channel && dimensionFilters.channel !== 'all') {
+      params.channel_id = dimensionFilters.channel;
     }
-
-    return { start_timestamp: startTimestamp, end_timestamp: now };
-  };
+    if (dimensionFilters.user_group && dimensionFilters.user_group !== 'all') {
+      params.user_group = dimensionFilters.user_group;
+    }
+    if (dimensionFilters.channel_group && dimensionFilters.channel_group !== 'all') {
+      params.channel_group = dimensionFilters.channel_group;
+    }
+    if (dimensionFilters.model && dimensionFilters.model !== 'all') {
+      params.model = dimensionFilters.model;
+    }
+    
+    return params;
+  }, [timeRange, granularity, dimensionFilters]);
 
   const fetchAllStats = async () => {
     setLoading(true);
@@ -124,13 +128,8 @@ const Stats = () => {
 
   const fetchOverviewStats = async () => {
     try {
-      const { start_timestamp, end_timestamp } = getDateRangeTimestamps();
-      const res = await API.get('/api/stats/overview', {
-        params: {
-          start_timestamp,
-          end_timestamp,
-        },
-      });
+      const params = buildApiParams();
+      const res = await API.get('/api/stats/overview', { params });
       const { success, data, message } = res.data;
       if (success && data) {
         setOverviewStats({
@@ -152,14 +151,9 @@ const Stats = () => {
 
   const fetchModelStats = async () => {
     try {
-      const { start_timestamp, end_timestamp } = getDateRangeTimestamps();
-      const res = await API.get('/api/stats/models', {
-        params: {
-          start_timestamp,
-          end_timestamp,
-          num: 10,
-        },
-      });
+      const params = buildApiParams();
+      params.num = 10;
+      const res = await API.get('/api/stats/models', { params });
       const { success, data, message } = res.data;
       if (success && data) {
         setModelStats(data);
@@ -174,16 +168,11 @@ const Stats = () => {
 
   const fetchUserRanking = async () => {
     try {
-      const { start_timestamp, end_timestamp } = getDateRangeTimestamps();
-      const res = await API.get('/api/stats/ranking', {
-        params: {
-          type: 'user',
-          order_by: 'quota',
-          limit: 10,
-          start_timestamp,
-          end_timestamp,
-        },
-      });
+      const params = buildApiParams();
+      params.type = 'user';
+      params.order_by = 'quota';
+      params.limit = 10;
+      const res = await API.get('/api/stats/ranking', { params });
       const { success, data, message } = res.data;
       if (success && data) {
         setUserRanking(data);
@@ -198,16 +187,11 @@ const Stats = () => {
 
   const fetchTokenRanking = async () => {
     try {
-      const { start_timestamp, end_timestamp } = getDateRangeTimestamps();
-      const res = await API.get('/api/stats/ranking', {
-        params: {
-          type: 'token',
-          order_by: 'quota',
-          limit: 10,
-          start_timestamp,
-          end_timestamp,
-        },
-      });
+      const params = buildApiParams();
+      params.type = 'token';
+      params.order_by = 'quota';
+      params.limit = 10;
+      const res = await API.get('/api/stats/ranking', { params });
       const { success, data, message } = res.data;
       if (success && data) {
         setTokenRanking(data);
@@ -220,8 +204,16 @@ const Stats = () => {
     }
   };
 
-  const handleDateRangeChange = (e, { value }) => {
-    setDateRange(value);
+  const handleTimeRangeChange = (newTimeRange) => {
+    setTimeRange(newTimeRange);
+  };
+
+  const handleGranularityChange = (newGranularity) => {
+    setGranularity(newGranularity);
+  };
+
+  const handleDimensionFilterChange = (activeFilters, allFilters) => {
+    setDimensionFilters(allFilters);
   };
 
   const handleRefresh = () => {
@@ -273,7 +265,26 @@ const Stats = () => {
     );
   };
 
-  if (loading) {
+  const getEnabledDimensions = () => {
+    if (isAdminUser) {
+      return ['channel', 'user_group', 'channel_group', 'model'];
+    }
+    return ['model'];
+  };
+
+  const getExportFilters = () => {
+    return {
+      startTimestamp: timeRange.startTimestamp,
+      endTimestamp: timeRange.endTimestamp,
+      granularity,
+      channelId: dimensionFilters.channel !== 'all' ? dimensionFilters.channel : null,
+      userGroup: dimensionFilters.user_group !== 'all' ? dimensionFilters.user_group : null,
+      channelGroup: dimensionFilters.channel_group !== 'all' ? dimensionFilters.channel_group : null,
+      model: dimensionFilters.model !== 'all' ? dimensionFilters.model : null,
+    };
+  };
+
+  if (loading && modelStats.length === 0) {
     return (
       <div className='stats-loading'>
         <Loader active size='large'>{t('dashboard.stats.loading')}</Loader>
@@ -300,18 +311,31 @@ const Stats = () => {
           <div className='stats-header'>
             <Header as='h2'>{t('dashboard.stats.title')}</Header>
             <div className='stats-controls'>
-              <Dropdown
-                selection
-                options={dateRangeOptions}
-                value={dateRange}
-                onChange={handleDateRangeChange}
-                className='date-range-dropdown'
+              <DatePickerWithPresets
+                onChange={handleTimeRangeChange}
+                defaultPreset='7d'
               />
+              <GranularitySelector
+                value={granularity}
+                onChange={handleGranularityChange}
+              />
+              <ExportButton filters={getExportFilters()} />
               <Button primary onClick={handleRefresh} loading={loading}>
                 {t('dashboard.stats.buttons.refresh')}
               </Button>
             </div>
           </div>
+        </Card.Content>
+      </Card>
+
+      <Card fluid className='stats-filter-card'>
+        <Card.Content>
+          <Card.Header>{t('dashboard.stats.filters.title') || '数据筛选'}</Card.Header>
+          <DimensionFilter
+            dimensions={getEnabledDimensions()}
+            onChange={handleDimensionFilterChange}
+            timeRange={timeRange}
+          />
         </Card.Content>
       </Card>
 

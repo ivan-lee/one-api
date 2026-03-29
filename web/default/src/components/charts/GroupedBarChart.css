@@ -1,0 +1,63 @@
+.grouped-bar-chart-container {
+  width: 100%;
+  min-height: 300px;
+}
+
+.grouped-bar-chart-empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  color: #A3AED0;
+}
+
+.grouped-bar-chart-empty p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.grouped-bar-chart-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.grouped-bar-chart-loading .loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #E9ECEF;
+  border-top-color: #4318FF;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .grouped-bar-chart-container {
+    min-height: 250px;
+  }
+
+  .grouped-bar-chart-empty,
+  .grouped-bar-chart-loading {
+    min-height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .grouped-bar-chart-container {
+    min-height: 200px;
+  }
+
+  .grouped-bar-chart-empty,
+  .grouped-bar-chart-loading {
+    min-height: 200px;
+  }
+}

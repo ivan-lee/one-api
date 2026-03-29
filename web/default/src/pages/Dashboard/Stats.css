@@ -39,6 +39,16 @@
   margin-bottom: 20px;
 }
 
+.stats-filter-card {
+  margin-bottom: 20px;
+}
+
+.stats-filter-card .header {
+  font-weight: 600;
+  color: #1b2559;
+  margin-bottom: 15px;
+}
+
 .stats-grid {
   margin-top: 20px;
 }
