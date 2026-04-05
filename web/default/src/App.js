@@ -31,6 +31,7 @@ import Dashboard from './pages/Dashboard';
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
 const Stats = lazy(() => import('./pages/Dashboard/Stats'));
+const DashboardV2 = lazy(() => import('./pages/DashboardV2'));
 
 function App() {
   const [userState, userDispatch] = useContext(UserContext);
@@ -313,6 +314,16 @@ function App() {
         element={
           <PrivateRoute>
             <Dashboard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path='/dashboard-v2'
+        element={
+          <PrivateRoute>
+            <Suspense fallback={<Loading></Loading>}>
+              <DashboardV2 />
+            </Suspense>
           </PrivateRoute>
         }
       />
