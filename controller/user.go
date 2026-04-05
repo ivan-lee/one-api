@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
 	"time"
 
@@ -293,10 +294,49 @@ func GetUserDashboard(c *gin.Context) {
 		})
 		return
 	}
+
+	timeSeries := dashboards
+
+	modelMap := make(map[string]*model.LogStatisticByGranularity)
+	for _, item := range dashboards {
+		if existing, ok := modelMap[item.ModelName]; ok {
+			existing.RequestCount += item.RequestCount
+			existing.Quota += item.Quota
+			existing.PromptTokens += item.PromptTokens
+			existing.CompletionTokens += item.CompletionTokens
+		} else {
+			modelMap[item.ModelName] = &model.LogStatisticByGranularity{
+				TimeSlot:         "",
+				ModelName:        item.ModelName,
+				RequestCount:     item.RequestCount,
+				Quota:            item.Quota,
+				PromptTokens:     item.PromptTokens,
+				CompletionTokens: item.CompletionTokens,
+			}
+		}
+	}
+
+	models := make([]*model.LogStatisticByGranularity, 0, len(modelMap))
+	for _, stat := range modelMap {
+		models = append(models, stat)
+	}
+
+	sort.Slice(models, func(i, j int) bool {
+		return models[i].RequestCount > models[j].RequestCount
+	})
+
+	if len(models) > 10 {
+		models = models[:10]
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "",
-		"data":    dashboards,
+		"data": gin.H{
+			"time_series": timeSeries,
+			"channels":    []gin.H{},
+			"models":      models,
+		},
 	})
 	return
 }
