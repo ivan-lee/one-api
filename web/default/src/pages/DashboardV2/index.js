@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, Tab } from 'semantic-ui-react';
 import { useTranslation } from 'react-i18next';
+import Overview from './tabs/Overview';
+import GlobalFilters from './components/GlobalFilters';
+import { DashboardProvider } from './context/DashboardContext';
 
 const DashboardV2 = () => {
   const { t } = useTranslation();
@@ -54,9 +57,7 @@ const DashboardV2 = () => {
       menuItem: t('dashboard.tabs.overview') || '概览',
       render: () => (
         <Tab.Pane attached={false}>
-          <div style={{ padding: '20px' }}>
-            Overview Content Placeholder
-          </div>
+          <Overview />
         </Tab.Pane>
       ),
     },
@@ -93,25 +94,28 @@ const DashboardV2 = () => {
   ];
 
   return (
-    <div className='dashboard-container'>
-      <Card fluid className='chart-card'>
-        <Card.Content>
-          <Card.Header className='header'>
-            {t('dashboard.title') || '数据仪表盘'}
-          </Card.Header>
-          <Tab
-            menu={{
-              secondary: true,
-              pointing: true,
-              className: 'dashboard-tab',
-            }}
-            panes={panes}
-            activeIndex={activeTab}
-            onTabChange={handleTabChange}
-          />
-        </Card.Content>
-      </Card>
-    </div>
+    <DashboardProvider>
+      <div className='dashboard-container'>
+        <GlobalFilters />
+        <Card fluid className='chart-card'>
+          <Card.Content>
+            <Card.Header className='header'>
+              {t('dashboard.title') || '数据仪表盘'}
+            </Card.Header>
+            <Tab
+              menu={{
+                secondary: true,
+                pointing: true,
+                className: 'dashboard-tab',
+              }}
+              panes={panes}
+              activeIndex={activeTab}
+              onTabChange={handleTabChange}
+            />
+          </Card.Content>
+        </Card>
+      </div>
+    </DashboardProvider>
   );
 };
 
