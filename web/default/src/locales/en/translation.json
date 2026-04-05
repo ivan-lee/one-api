@@ -636,7 +636,10 @@
       "heatmap": {
         "title": "Usage Heatmap",
         "hour": "Hour",
-        "weekday": "Weekday"
+        "weekday": "Weekday",
+        "api_unavailable": "API Unavailable",
+        "api_unavailable_desc": "Heatmap data is temporarily unavailable, please try again later",
+        "no_data_desc": "No heatmap data available for current filters"
       },
       "radar": {
         "title": "Multi-dimension Comparison"
