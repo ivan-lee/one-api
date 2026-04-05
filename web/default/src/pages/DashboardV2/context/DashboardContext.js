@@ -18,6 +18,11 @@ export const DashboardProvider = ({ children }) => {
 
   // Transform flat array data to object structure expected by DashboardV2
   const transformModels = useCallback((data) => {
+    // 防御性检查：确保 data 是数组
+    if (!Array.isArray(data) || data.length === 0) {
+      return [];
+    }
+
     const modelMap = {};
     data.forEach(item => {
       if (!modelMap[item.model_name]) {
