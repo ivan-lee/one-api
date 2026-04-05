@@ -329,15 +329,27 @@ func GetUserDashboard(c *gin.Context) {
 		models = models[:10]
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "",
-		"data": gin.H{
-			"time_series": timeSeries,
-			"channels":    []gin.H{},
-			"models":      models,
-		},
-	})
+	// 根据 granularity 参数判断客户端类型
+	// 旧 Dashboard 不传递 granularity 参数，期望返回扁平数组
+	// 新 DashboardV2 传递 granularity 参数，期望返回对象结构
+	if c.Query("granularity") == "" {
+		// 旧 Dashboard - 返回扁平数组
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"data":    dashboards,
+		})
+	} else {
+		// 新 DashboardV2 - 返回对象结构
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"message": "",
+			"data": gin.H{
+				"time_series": timeSeries,
+				"channels":    []gin.H{},
+				"models":      models,
+			},
+		})
+	}
 	return
 }
 
