@@ -133,6 +133,7 @@ func SetApiRouter(router *gin.Engine) {
 			statsRoute.GET("/user-groups", middleware.AdminAuth(), controller.GetUserGroupStats)
 			statsRoute.GET("/channel-groups", middleware.AdminAuth(), controller.GetChannelGroupStats)
 			statsRoute.GET("/ranking", middleware.AdminAuth(), controller.GetStatsRanking)
+			statsRoute.GET("/heatmap", middleware.UserAuth(), controller.GetHeatmapData)
 			// User endpoint for own statistics
 			statsRoute.GET("/self", middleware.UserAuth(), controller.GetUserSelfStats)
 		}

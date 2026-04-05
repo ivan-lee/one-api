@@ -637,3 +637,93 @@ func getModelRanking(startTimestamp, endTimestamp int64, orderBy string, limit i
 	err := query.Scan(&stats).Error
 	return stats, err
 }
+
+// HeatmapData represents usage statistics aggregated by hour and weekday
+type HeatmapData struct {
+	Hour             int   `json:"hour" gorm:"column:hour"`
+	Weekday          int   `json:"weekday" gorm:"column:weekday"`
+	RequestCount     int64 `json:"request_count" gorm:"column:request_count"`
+	Quota            int64 `json:"quota" gorm:"column:quota"`
+	PromptTokens     int64 `json:"prompt_tokens" gorm:"column:prompt_tokens"`
+	CompletionTokens int64 `json:"completion_tokens" gorm:"column:completion_tokens"`
+}
+
+// GetHeatmapData returns usage statistics aggregated by hour (0-23) and weekday (1-7)
+// GET /api/stats/heatmap
+func GetHeatmapData(c *gin.Context) {
+	startTimestamp, endTimestamp := parseTimeRange(c)
+
+	var stats []*HeatmapData
+	var query string
+
+	// Build database-specific query for hour and weekday extraction
+	if common.UsingPostgreSQL {
+		query = `
+			SELECT 
+				CAST(EXTRACT(HOUR FROM to_timestamp(created_at)) AS INTEGER) as hour,
+				CAST(EXTRACT(DOW FROM to_timestamp(created_at)) + 1 AS INTEGER) as weekday,
+				count(*) as request_count,
+				COALESCE(sum(quota), 0) as quota,
+				COALESCE(sum(prompt_tokens), 0) as prompt_tokens,
+				COALESCE(sum(completion_tokens), 0) as completion_tokens
+			FROM logs
+			WHERE type = ?
+				AND ($1 = 0 OR created_at >= $1)
+				AND ($2 = 0 OR created_at <= $2)
+			GROUP BY hour, weekday
+			ORDER BY weekday, hour`
+	} else if common.UsingSQLite {
+		query = `
+			SELECT 
+				CAST(strftime('%H', datetime(created_at, 'unixepoch')) AS INTEGER) as hour,
+				CAST(strftime('%w', datetime(created_at, 'unixepoch')) + 1 AS INTEGER) as weekday,
+				count(*) as request_count,
+				COALESCE(sum(quota), 0) as quota,
+				COALESCE(sum(prompt_tokens), 0) as prompt_tokens,
+				COALESCE(sum(completion_tokens), 0) as completion_tokens
+			FROM logs
+			WHERE type = ?
+				AND (? = 0 OR created_at >= ?)
+				AND (? = 0 OR created_at <= ?)
+			GROUP BY hour, weekday
+			ORDER BY weekday, hour`
+	} else {
+		// MySQL (default)
+		query = `
+			SELECT 
+				HOUR(FROM_UNIXTIME(created_at)) as hour,
+				DAYOFWEEK(FROM_UNIXTIME(created_at)) as weekday,
+				count(*) as request_count,
+				IFNULL(sum(quota), 0) as quota,
+				IFNULL(sum(prompt_tokens), 0) as prompt_tokens,
+				IFNULL(sum(completion_tokens), 0) as completion_tokens
+			FROM logs
+			WHERE type = ?
+				AND (? = 0 OR created_at >= ?)
+				AND (? = 0 OR created_at <= ?)
+			GROUP BY hour, weekday
+			ORDER BY weekday, hour`
+	}
+
+	var err error
+	if common.UsingPostgreSQL {
+		err = model.LOG_DB.Raw(query, model.LogTypeConsume, startTimestamp, endTimestamp).Scan(&stats).Error
+	} else {
+		// MySQL and SQLite use the same parameter pattern
+		err = model.LOG_DB.Raw(query, model.LogTypeConsume, startTimestamp, startTimestamp, endTimestamp, endTimestamp).Scan(&stats).Error
+	}
+
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data":    stats,
+	})
+}
