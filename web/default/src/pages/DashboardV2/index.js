@@ -4,6 +4,7 @@ import { Card, Tab } from 'semantic-ui-react';
 import { useTranslation } from 'react-i18next';
 import Overview from './tabs/Overview';
 import TimeAnalysis from './tabs/TimeAnalysis';
+import DimensionComparison from './tabs/DimensionComparison';
 import ModelInsight from './tabs/ModelInsight';
 import GlobalFilters from './components/GlobalFilters';
 import { DashboardProvider } from './context/DashboardContext';
@@ -75,9 +76,7 @@ const DashboardV2 = () => {
       menuItem: t('dashboard.tabs.dimension-comparison') || '维度对比',
       render: () => (
         <Tab.Pane attached={false}>
-          <div style={{ padding: '20px' }}>
-            Dimension Comparison Content Placeholder
-          </div>
+          <DimensionComparison />
         </Tab.Pane>
       ),
     },
