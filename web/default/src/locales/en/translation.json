@@ -534,11 +534,15 @@
     }
   },
   "dashboard": {
+    "title": "Dashboard",
     "tabs": {
       "overview": "Overview",
       "timeAnalysis": "Time Analysis",
       "dimensionComparison": "Dimension Comparison",
-      "modelInsight": "Model Insight"
+      "modelInsight": "Model Insight",
+      "time-analysis": "Time Analysis",
+      "dimension-comparison": "Dimension Comparison",
+      "model-insight": "Model Insight"
     },
     "metrics": {
       "todayRequests": "Today Requests",

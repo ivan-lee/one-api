@@ -534,11 +534,15 @@
     }
   },
   "dashboard": {
+    "title": "数据仪表盘",
     "tabs": {
       "overview": "概览",
       "timeAnalysis": "时段分析",
       "dimensionComparison": "维度对比",
-      "modelInsight": "模型洞察"
+      "modelInsight": "模型洞察",
+      "time-analysis": "时段分析",
+      "dimension-comparison": "维度对比",
+      "model-insight": "模型洞察"
     },
     "metrics": {
       "todayRequests": "今日请求量",
