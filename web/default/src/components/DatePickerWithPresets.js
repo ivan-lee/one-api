@@ -124,12 +124,14 @@ const DatePickerWithPresets = ({
 
   useEffect(() => {
     if (defaultPreset !== 'custom') {
+      console.log('[DatePickerWithPresets] defaultPreset 变化:', defaultPreset);
       const result = calculateTimestamps(defaultPreset);
       if (result && onChange) {
+        console.log('[DatePickerWithPresets] 触发 onChange:', result);
         onChange(result);
       }
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [defaultPreset]); // 修复：defaultPreset 变化时需要重新触发
 
   const datePickerLocale = i18n.language === 'zh' || i18n.language === 'zh-CN' ? 'zh-CN' : 'en-US';
 
