@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, Tab } from 'semantic-ui-react';
 import { useTranslation } from 'react-i18next';
 import Overview from './tabs/Overview';
+import TimeAnalysis from './tabs/TimeAnalysis';
+import ModelInsight from './tabs/ModelInsight';
 import GlobalFilters from './components/GlobalFilters';
 import { DashboardProvider } from './context/DashboardContext';
 
@@ -65,9 +67,7 @@ const DashboardV2 = () => {
       menuItem: t('dashboard.tabs.time-analysis') || '时段分析',
       render: () => (
         <Tab.Pane attached={false}>
-          <div style={{ padding: '20px' }}>
-            Time Analysis Content Placeholder
-          </div>
+          <TimeAnalysis />
         </Tab.Pane>
       ),
     },
@@ -85,9 +85,7 @@ const DashboardV2 = () => {
       menuItem: t('dashboard.tabs.model-insight') || '模型洞察',
       render: () => (
         <Tab.Pane attached={false}>
-          <div style={{ padding: '20px' }}>
-            Model Insight Content Placeholder
-          </div>
+          <ModelInsight />
         </Tab.Pane>
       ),
     },
