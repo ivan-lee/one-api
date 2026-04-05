@@ -7,6 +7,7 @@
     "topup": "充值",
     "user": "用户",
     "dashboard": "总览",
+    "dashboardV2": "总览V2",
     "log": "日志",
     "setting": "设置",
     "about": "关于",
@@ -533,6 +534,34 @@
     }
   },
   "dashboard": {
+    "tabs": {
+      "overview": "概览",
+      "timeAnalysis": "时段分析",
+      "dimensionComparison": "维度对比",
+      "modelInsight": "模型洞察"
+    },
+    "metrics": {
+      "todayRequests": "今日请求量",
+      "todayQuota": "今日消费",
+      "todayTokens": "今日Tokens"
+    },
+    "summary": {
+      "totalRequests": "总请求",
+      "totalQuota": "总消费",
+      "topChannels": "Top3渠道",
+      "topModels": "Top3模型"
+    },
+    "filters": {
+      "dimension": "维度选择",
+      "channel": "渠道",
+      "userGroup": "用户组",
+      "channelGroup": "渠道组",
+      "model": "模型"
+    },
+    "errors": {
+      "apiUnavailable": "API未可用"
+    },
+    "loading": "加载中...",
     "date_picker": {
       "title": "时间范围",
       "presets": {

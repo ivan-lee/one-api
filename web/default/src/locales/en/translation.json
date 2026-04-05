@@ -7,6 +7,7 @@
     "topup": "Top Up",
     "user": "User",
     "dashboard": "Dashboard",
+    "dashboardV2": "Dashboard V2",
     "log": "Log",
     "setting": "Settings",
     "about": "About",
@@ -533,6 +534,34 @@
     }
   },
   "dashboard": {
+    "tabs": {
+      "overview": "Overview",
+      "timeAnalysis": "Time Analysis",
+      "dimensionComparison": "Dimension Comparison",
+      "modelInsight": "Model Insight"
+    },
+    "metrics": {
+      "todayRequests": "Today Requests",
+      "todayQuota": "Today Quota",
+      "todayTokens": "Today Tokens"
+    },
+    "summary": {
+      "totalRequests": "Total Requests",
+      "totalQuota": "Total Quota",
+      "topChannels": "Top3 Channels",
+      "topModels": "Top3 Models"
+    },
+    "filters": {
+      "dimension": "Dimension",
+      "channel": "Channel",
+      "userGroup": "User Group",
+      "channelGroup": "Channel Group",
+      "model": "Model"
+    },
+    "errors": {
+      "apiUnavailable": "API Unavailable"
+    },
+    "loading": "Loading...",
     "date_picker": {
       "title": "Time Range",
       "presets": {

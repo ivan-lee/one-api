@@ -57,6 +57,11 @@ let headerButtons = [
     icon: 'chart bar',
   },
   {
+    name: 'header.dashboardV2',
+    to: '/dashboard-v2',
+    icon: 'chart bar',
+  },
+  {
     name: 'header.log',
     to: '/log',
     icon: 'book',
